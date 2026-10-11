@@ -39,6 +39,9 @@ powerbi/**/.pbi/unappliedChanges.json
 *.csv
 *.parquet
 *.json.gz
+# ...except the dashboard's small pre-aggregated files, which the deployed app
+# needs (no raw rows: ~0.1 MB of summaries, built by analysis/build_app_data.py)
+!app/data/*.parquet
 
 # --- Editors / OS ----------------------------------------------------------
 .vscode/

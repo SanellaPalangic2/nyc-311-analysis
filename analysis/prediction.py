@@ -278,6 +278,11 @@ def main():
         "target_hours": TARGET_HOURS, "features": FEATURES, "counts": counts,
         "split": {"train": "Jan-Sep 2025 (created)", "test": "Oct-Dec 2025 (created)"},
         "threshold": 0.5, "results": results, "fit_seconds": fit_seconds, "best_model": best,
+        # ROC curves on a fixed grid of 101 false-positive rates (small enough for
+        # the dashboard; the full curves have hundreds of thousands of points)
+        "roc": {name: {"fpr": list(np.linspace(0, 1, 101)),
+                       "tpr": list(np.interp(np.linspace(0, 1, 101), fpr, tpr))}
+                for name, (fpr, tpr, _) in curves.items()},
         "calibration": {"brier": brier, "mean_predicted": list(mean_pred),
                         "fraction_positive": list(frac_pos)},
         "permutation": {"rows": PERMUTATION_ROWS, "repeats": PERMUTATION_REPEATS, "seed": SEED,

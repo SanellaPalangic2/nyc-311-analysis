@@ -1,0 +1,15 @@
+# Streamlit settings for the dashboard (same colors as the charts).
+[theme]
+base = "light"
+primaryColor = "#2a78d6"
+backgroundColor = "#fcfcfb"
+secondaryBackgroundColor = "#f0efec"
+textColor = "#0b0b0b"
+font = "sans serif"
+
+[server]
+headless = true
+
+[browser]
+# Don't send usage statistics from the public server.
+gatherUsageStats = false

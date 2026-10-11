@@ -1,0 +1,7 @@
+# Packages for the public dashboard only (Render installs these).
+# Deliberately small: no database driver, no lifelines or scikit-learn. The
+# app only reads the pre-aggregated files in app/data/.
+streamlit==1.65.0
+altair==6.3.0
+pandas==3.0.6
+pyarrow==25.0.1

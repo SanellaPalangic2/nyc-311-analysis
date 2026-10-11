@@ -1,0 +1,20 @@
+# Render Blueprint: deploys the Streamlit dashboard as a web service.
+# Field names follow https://render.com/docs/blueprint-spec
+#
+# No secrets: the app reads only the small files committed in app/data/, so
+# there's no DATABASE_URL or any other credential to set.
+services:
+  - type: web
+    name: nyc-311-dashboard
+    runtime: python
+    plan: free
+    rootDir: app                       # build and run from the app/ folder
+    buildCommand: pip install -r requirements.txt
+    # Render gives each service a port in $PORT; Streamlit must listen on it,
+    # on all network interfaces (0.0.0.0), not just localhost.
+    startCommand: streamlit run streamlit_app.py --server.port $PORT --server.address 0.0.0.0
+    healthCheckPath: /_stcore/health   # Streamlit's built-in health endpoint
+    autoDeployTrigger: commit          # redeploy on every push to the branch
+    envVars:
+      - key: PYTHON_VERSION            # Render needs a full x.y.z version here
+        value: 3.13.5
