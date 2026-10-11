@@ -24,6 +24,34 @@ import psycopg
 import config
 from run_analysis import ANALYSIS_DIR, create_view, run_query_file
 
+# Power BI compares text WITHOUT regard to case, unlike PostgreSQL. NYC's data
+# has complaint types that differ only in capitalization and belong to
+# different agencies ("Plumbing" = DOB, "PLUMBING" = HPD). Power BI would merge
+# them into one value (and refuse them as a table key). So, in the export only,
+# those names get their main agency appended: "Plumbing (DOB)", "PLUMBING (HPD)".
+# Names that don't collide are unchanged.
+COMPLAINT_LABELS_SQL = """
+    CREATE TEMP TABLE complaint_labels AS
+    WITH main AS (
+        SELECT complaint_type, mode() WITHIN GROUP (ORDER BY agency) AS main_agency
+        FROM clean_311
+        GROUP BY complaint_type
+    ),
+    collisions AS (
+        SELECT LOWER(complaint_type) AS lowered
+        FROM main
+        GROUP BY 1
+        HAVING COUNT(*) > 1
+    )
+    SELECT
+        complaint_type,
+        CASE WHEN LOWER(complaint_type) IN (SELECT lowered FROM collisions)
+             THEN complaint_type || ' (' || main_agency || ')'
+             ELSE complaint_type
+        END AS label
+    FROM main
+"""
+
 # Flags are exported as 1/0 instead of true/false so Power BI can SUM them
 # (e.g. SUM(closed_within_30d) = number closed within 30 days).
 QUERIES = {
@@ -35,7 +63,7 @@ QUERIES = {
             season,
             agency,
             CASE WHEN agency = 'NYPD' THEN 'NYPD' ELSE 'Other agencies' END AS agency_group,
-            complaint_type,
+            l.label                                  AS complaint_type,
             borough,
             resolution_status,
             ROUND(resolution_hours::numeric, 4)      AS resolution_hours,
@@ -45,6 +73,7 @@ QUERIES = {
             is_extreme::int                          AS is_extreme,
             is_zero_duration::int                    AS is_zero_duration
         FROM v_requests
+        JOIN complaint_labels l USING (complaint_type)
         ORDER BY unique_key
     """,
     "dim_agency": """
@@ -55,14 +84,15 @@ QUERIES = {
     """,
     "dim_complaint_type": """
         SELECT
-            complaint_type,
+            l.label                                  AS complaint_type,
             mode() WITHIN GROUP (ORDER BY agency)    AS main_agency,
             COUNT(*)                                 AS n_requests,
             (COUNT(*) >= 1000)::int                  AS has_1000_plus,
             -- Same top 10 as 06_complaint_type_by_borough.sql (ROW_NUMBER, like its LIMIT 10)
             (ROW_NUMBER() OVER (ORDER BY COUNT(*) DESC) <= 10)::int AS is_top10_volume
         FROM clean_311
-        GROUP BY complaint_type
+        JOIN complaint_labels l USING (complaint_type)
+        GROUP BY l.label
         ORDER BY complaint_type
     """,
     "dim_borough": """
@@ -122,6 +152,16 @@ def main():
 
     with psycopg.connect(config.get_database_url()) as conn:
         create_view(conn)
+        conn.execute(COMPLAINT_LABELS_SQL)
+        labels = dict(conn.execute("SELECT complaint_type, label FROM complaint_labels").fetchall())
+        renamed = {k: v for k, v in labels.items() if k != v}
+        # Safety check: every label must be unique even when case is ignored.
+        lowered = [v.lower() for v in labels.values()]
+        if len(set(lowered)) != len(lowered):
+            raise SystemExit("Complaint type labels still collide when case is ignored.")
+        print(f"complaint types renamed for Power BI (case-only duplicates): {len(renamed)}")
+        for original, label in sorted(renamed.items(), key=lambda kv: kv[0].lower()):
+            print(f"  {original!r} -> {label!r}")
 
         for name, sql in QUERIES.items():
             path = config.POWERBI_DIR / f"{name}.csv"
@@ -132,7 +172,10 @@ def main():
         for prefix, name in SUMMARIES.items():
             sql_file = next(ANALYSIS_DIR.glob(f"{prefix}_*.sql"))
             path = config.POWERBI_DIR / f"{name}.csv"
-            run_query_file(sql_file, conn).to_csv(path, index=False)
+            summary = run_query_file(sql_file, conn)
+            if "complaint_type" in summary.columns:  # same labels as the fact table
+                summary["complaint_type"] = summary["complaint_type"].map(labels)
+            summary.to_csv(path, index=False)
             print(f"{path.name:32} {count_data_rows(path):>10,} rows  (from {sql_file.name})")
 
 
