@@ -2,7 +2,8 @@
 -- Built by src/clean.py. Rows are FLAGGED rather than deleted wherever
 -- possible, so every cleaning decision can be counted and undone in a query.
 
-DROP TABLE IF EXISTS clean_311;
+-- CASCADE also drops the v_requests view built on this table; run_analysis.py recreates it.
+DROP TABLE IF EXISTS clean_311 CASCADE;
 
 CREATE TABLE clean_311 (
     unique_key              BIGINT PRIMARY KEY,  -- duplicates removed, so this is enforceable
