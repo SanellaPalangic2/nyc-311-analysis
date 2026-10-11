@@ -22,6 +22,9 @@ data/processed/*
 outputs/powerbi/*
 !outputs/powerbi/.gitkeep
 
+# Power BI files embed the imported data, so they're data too.
+*.pbix
+
 # Catch-all for data formats anywhere in the repo
 *.csv
 *.parquet
