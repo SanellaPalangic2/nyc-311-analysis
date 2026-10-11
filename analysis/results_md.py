@@ -28,6 +28,11 @@ def pval(p):
     return f"{p:.2e}" if p < 0.001 else f"{p:.4f}"
 
 
+def p_text(p):
+    """p-value for running text: 'p < 1e-300' or 'p = 0.0033'."""
+    return "p < 1e-300 (underflows to 0)" if p == 0 else f"p = {pval(p)}"
+
+
 def table(header, rows):
     lines = ["| " + " | ".join(header) + " |",
              "|" + "|".join("---:" if i else "---" for i in range(len(header))) + "|"]
@@ -118,7 +123,7 @@ def survival_section(s):
     lr = s["logrank"]
     out += ["### Log-rank test (top 8 agencies)", "",
             f"Tests whether the 8 survival curves are all the same. Chi-square = "
-            f"{lr['test_statistic']:,.2f}, df = {lr['degrees_of_freedom']}, p = {pval(lr['p_value'])}, "
+            f"{lr['test_statistic']:,.2f}, df = {lr['degrees_of_freedom']}, {p_text(lr['p_value'])}, "
             f"n = {lr['n']:,}. The curves differ, but with millions of rows any difference is "
             "significant, so the size of the gaps (table above) matters more than the p-value.", ""]
 
@@ -188,7 +193,7 @@ def survival_section(s):
                     "is not explained by season alone; a different mix of agencies and complaint "
                     "types in that season is one possible explanation. Treat this as tentative: "
                     f"the season effects fail the proportional hazards test (e.g. "
-                    f"season: {raw_slowest} p = {pval(ph_season.get('season: ' + raw_slowest, 1))}), "
+                    f"season: {raw_slowest} {p_text(ph_season.get('season: ' + raw_slowest, 1))}), "
                     "so they are averages over time.", ""]
 
     ph = s["ph_test"]
@@ -234,6 +239,75 @@ def survival_figures():
     ]
 
 
+# --- Stage 2 -------------------------------------------------------------------
+
+def stats_section(s):
+    tests = {t["factor"]: t for t in s["kruskal_wallis"]}
+    out = ["## Stage 2: Statistical testing", "",
+           "Script: `analysis/stats_tests.py`. Uses the "
+           f"{s['n_closed']:,} closed requests (the same rows as the earlier medians), because "
+           "these tests need an observed resolution time; open requests are handled by the "
+           f"survival analysis in Stage 1. Borough tests use the {s['n_known_borough']:,} "
+           "requests with a known borough.", "",
+           "### Kruskal-Wallis tests", "",
+           "Kruskal-Wallis asks whether the groups' resolution times come from the same "
+           "distribution. It compares ranks, not raw hours, so it doesn't assume normally "
+           "distributed data (resolution times are extremely skewed) and isn't dominated by "
+           "the few year-long requests.", "",
+           table(["Factor", "Groups", "Requests", "H", "df", "p", "Epsilon-squared"],
+                 [[t["factor"], t["groups"], f"{t['n']:,}", f"{t['H']:,.2f}", t["df"],
+                   pval(t["p_value"]), f"{t['epsilon_squared']:.6f}"]
+                  for t in s["kruskal_wallis"]]), "",
+           "**Why the effect size matters more than the p-value here.** A p-value answers "
+           "\"could a difference this large be chance?\" With millions of rows, even a "
+           "difference of a few minutes is not chance, so every p-value is essentially 0 and "
+           "they can't be used to rank the factors. Epsilon-squared answers a different "
+           "question: what share of the variation in (ranked) resolution time does the "
+           "grouping explain, from 0 (none) to 1 (all)? That's the measure of *how much* each "
+           "factor matters.", ""]
+
+    ranked = sorted(tests.values(), key=lambda t: t["epsilon_squared"], reverse=True)
+    top = ranked[0]
+    others = ranked[1:]
+    ratios = ", ".join(f"{top['epsilon_squared'] / t['epsilon_squared']:,.1f} times {t['factor']}'s "
+                       f"({t['epsilon_squared']:.6f})" for t in others)
+    supported = top["factor"] == "agency"
+    out += ["**Does this support the finding that agency matters more than borough or season?** "
+            + ("Yes: " if supported else "No: ")
+            + f"{top['factor']} explains {100 * top['epsilon_squared']:.2f}% of the rank variation "
+            f"in resolution time (epsilon-squared {top['epsilon_squared']:.6f}), {ratios}.", ""]
+
+    for factor, label in [("agency", "agency"), ("borough", "borough")]:
+        rows = sorted(s["bootstrap"][factor], key=lambda r: r["median"])
+        out += [f"### Bootstrapped 95% CI for the median, by {label}", "",
+                table([label.title(), "Closed requests", "Median (h)", "95% CI (h)", "CI width (h)"],
+                      [[r[factor].title() if factor == "borough" else r[factor], f"{r['n']:,}",
+                        h(r["median"]), f"{h(r['ci_lower'])} - {h(r['ci_upper'])}",
+                        f"{r['ci_upper'] - r['ci_lower']:,.2f}"] for r in rows]), ""]
+    widest = max(s["bootstrap"]["agency"], key=lambda r: r["ci_upper"] - r["ci_lower"])
+    out += [f"Method: percentile bootstrap, {s['n_boot']:,} resamples per group, random seed "
+            f"{s['seed']}, using **all** closed requests in each group (no subsampling was "
+            f"needed: the bootstrap took {s['bootstrap_minutes']:.1f} minutes). Each resample draws the same number of requests "
+            "with replacement and takes the median; the CI is the middle 95% of those medians.", "",
+            "Most intervals are very narrow because the groups are so large. The widest is "
+            f"{widest['agency']} ({h(widest['ci_lower'])} - {h(widest['ci_upper'])} h, "
+            f"{widest['n']:,} closed requests): small groups, and groups whose times are spread "
+            "out around the middle, get wider intervals. These CIs cover closed requests only; "
+            "Stage 1's Kaplan-Meier medians also account for open requests.", ""]
+    return out
+
+
+def stats_figures():
+    return [
+        ("2a_effect_sizes.png", "Epsilon-squared effect sizes from the Kruskal-Wallis tests: "
+         "how much of the variation in resolution time agency, borough and season each explain."),
+        ("2b_bootstrap_median_agency.png", "Median resolution time per agency with 95% "
+         "bootstrap confidence intervals, on a log scale."),
+        ("2c_bootstrap_median_borough.png", "Median resolution time per borough with 95% "
+         "bootstrap confidence intervals."),
+    ]
+
+
 # --- Render --------------------------------------------------------------------
 
 def render():
@@ -245,6 +319,10 @@ def render():
     if survival:
         lines += survival_section(survival)
         figures += survival_figures()
+    stats = load("stats.json")
+    if stats:
+        lines += stats_section(stats)
+        figures += stats_figures()
 
     if figures:
         lines += ["## Figures", ""]

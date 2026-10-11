@@ -55,7 +55,7 @@ Where nothing is censored, tiny changes (like +0.00 or -0.00) aren't bias: the K
 
 ### Log-rank test (top 8 agencies)
 
-Tests whether the 8 survival curves are all the same. Chi-square = 3,088,648.61, df = 7, p = < 1e-300 (underflows to 0), n = 3,524,524. The curves differ, but with millions of rows any difference is significant, so the size of the gaps (table above) matters more than the p-value.
+Tests whether the 8 survival curves are all the same. Chi-square = 3,088,648.61, df = 7, p < 1e-300 (underflows to 0), n = 3,524,524. The curves differ, but with millions of rows any difference is significant, so the size of the gaps (table above) matters more than the p-value.
 
 ### Cox proportional hazards model
 
@@ -142,9 +142,64 @@ What it means: each hazard ratio is best read as an **average effect over the fo
 | type: UNSANITARY CONDITION | 1.63 | 0.2014 |
 | type: Water System | 774.18 | 2.22e-170 |
 
+## Stage 2: Statistical testing
+
+Script: `analysis/stats_tests.py`. Uses the 3,599,434 closed requests (the same rows as the earlier medians), because these tests need an observed resolution time; open requests are handled by the survival analysis in Stage 1. Borough tests use the 3,597,064 requests with a known borough.
+
+### Kruskal-Wallis tests
+
+Kruskal-Wallis asks whether the groups' resolution times come from the same distribution. It compares ranks, not raw hours, so it doesn't assume normally distributed data (resolution times are extremely skewed) and isn't dominated by the few year-long requests.
+
+| Factor | Groups | Requests | H | df | p | Epsilon-squared |
+|---|---:|---:|---:|---:|---:|---:|
+| agency | 15 | 3,599,434 | 1,993,176.78 | 14 | < 1e-300 (underflows to 0) | 0.553747 |
+| borough | 5 | 3,597,064 | 17,489.94 | 4 | < 1e-300 (underflows to 0) | 0.004862 |
+| season | 4 | 3,599,434 | 23,790.96 | 3 | < 1e-300 (underflows to 0) | 0.006610 |
+
+**Why the effect size matters more than the p-value here.** A p-value answers "could a difference this large be chance?" With millions of rows, even a difference of a few minutes is not chance, so every p-value is essentially 0 and they can't be used to rank the factors. Epsilon-squared answers a different question: what share of the variation in (ranked) resolution time does the grouping explain, from 0 (none) to 1 (all)? That's the measure of *how much* each factor matters.
+
+**Does this support the finding that agency matters more than borough or season?** Yes: agency explains 55.37% of the rank variation in resolution time (epsilon-squared 0.553747), 83.8 times season's (0.006610), 113.9 times borough's (0.004862).
+
+### Bootstrapped 95% CI for the median, by agency
+
+| Agency | Closed requests | Median (h) | 95% CI (h) | CI width (h) |
+|---|---:|---:|---:|---:|
+| NYPD | 1,717,526 | 1.26 | 1.26 - 1.26 | 0.01 |
+| DHS | 45,456 | 8.06 | 7.91 - 8.22 | 0.31 |
+| DEP | 194,688 | 21.57 | 21.42 - 21.72 | 0.30 |
+| DOHMH | 79,819 | 24.15 | 24.08 - 24.23 | 0.15 |
+| DSNY | 323,598 | 32.70 | 32.33 - 33.15 | 0.82 |
+| DOT | 206,213 | 46.33 | 45.95 - 46.73 | 0.78 |
+| HPD | 771,404 | 79.19 | 78.92 - 79.43 | 0.50 |
+| DCWP | 18,265 | 99.18 | 95.75 - 108.34 | 12.59 |
+| DPR | 95,413 | 213.86 | 210.80 - 216.65 | 5.85 |
+| DOB | 103,068 | 276.12 | 271.36 - 281.88 | 10.52 |
+| OTI | 204 | 355.42 | 334.36 - 385.55 | 51.19 |
+| OOS | 1,111 | 1,008.25 | 1,003.61 - 1,015.67 | 12.06 |
+| DOE | 1,737 | 1,317.20 | 1,149.19 - 1,514.26 | 365.07 |
+| TLC | 30,051 | 1,659.00 | 1,620.48 - 1,696.30 | 75.81 |
+| EDC | 10,881 | 7,845.19 | 7,802.75 - 7,873.85 | 71.10 |
+
+### Bootstrapped 95% CI for the median, by borough
+
+| Borough | Closed requests | Median (h) | 95% CI (h) | CI width (h) |
+|---|---:|---:|---:|---:|
+| Queens | 860,855 | 4.03 | 4.01 - 4.07 | 0.06 |
+| Brooklyn | 1,063,226 | 6.09 | 6.03 - 6.16 | 0.13 |
+| Bronx | 831,865 | 9.30 | 9.21 - 9.38 | 0.17 |
+| Manhattan | 709,087 | 9.91 | 9.72 - 10.09 | 0.37 |
+| Staten Island | 132,031 | 15.18 | 14.82 - 15.61 | 0.79 |
+
+Method: percentile bootstrap, 1,000 resamples per group, random seed 42, using **all** closed requests in each group (no subsampling was needed: the bootstrap took 5.9 minutes). Each resample draws the same number of requests with replacement and takes the median; the CI is the middle 95% of those medians.
+
+Most intervals are very narrow because the groups are so large. The widest is DOE (1,149.19 - 1,514.26 h, 1,737 closed requests): small groups, and groups whose times are spread out around the middle, get wider intervals. These CIs cover closed requests only; Stage 1's Kaplan-Meier medians also account for open requests.
+
 ## Figures
 
 - `results/figures/1a_km_top8_agencies.png`: Kaplan-Meier curves for the 8 largest agencies: the share of requests still open over time, labeled where each crosses 50% (its median).
 - `results/figures/1b_median_bias_by_agency.png`: For each agency, the median from closed requests only next to the Kaplan-Meier median that counts open requests; long bars show where dropping open requests biased the result.
 - `results/figures/1c_cox_hazard_ratios.png`: Cox model hazard ratios with 95% CIs: which agencies, boroughs, seasons and complaint types close faster or slower than the reference.
 - `results/figures/1d_ph_check_loglog.png`: Proportional hazards check: log(-log S) curves that cross instead of running parallel show the assumption does not hold.
+- `results/figures/2a_effect_sizes.png`: Epsilon-squared effect sizes from the Kruskal-Wallis tests: how much of the variation in resolution time agency, borough and season each explain.
+- `results/figures/2b_bootstrap_median_agency.png`: Median resolution time per agency with 95% bootstrap confidence intervals, on a log scale.
+- `results/figures/2c_bootstrap_median_borough.png`: Median resolution time per borough with 95% bootstrap confidence intervals.
