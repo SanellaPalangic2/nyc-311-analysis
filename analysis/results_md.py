@@ -437,6 +437,96 @@ def prediction_figures():
     ]
 
 
+# --- Stage 4: summary tables and limitations -------------------------------------
+
+def summary_section(k):
+    km8 = "; ".join(f"{a} {h(m)}" for a, m, _, _ in k["top8_km"])
+    bias = "; ".join(f"{r['agency']} {h(r['median_closed_only'])} -> {h(r['km_median'])} h "
+                     f"({r['difference_pct']:+.2f}%)" for r in k["biggest_bias"])
+    out = ["## Summary of key numbers", "",
+           "One table per stage. Details, methods and caveats are in the sections below.", "",
+           "### Stage 1: Survival analysis", "",
+           table(["Measure", "Value"], [
+               ["Requests used (closed + still open)", f"{k['rows_used']:,}"],
+               ["Still open, treated as censored", f"{k['censored']:,} ({k['pct_censored']:.2f}%)"],
+               ["Left out: closing time unknown", f"{k['excluded_unknown_time']:,}"],
+               ["Overall median: closed only -> Kaplan-Meier",
+                f"{h(k['overall_closed_only'])} h -> {h(k['overall_km'])} h "
+                f"(95% CI {h(k['overall_km_ci'][0])} - {h(k['overall_km_ci'][1])})"],
+               ["Kaplan-Meier median, top 8 agencies (h)", km8],
+               ["Largest bias from dropping open requests", bias],
+               ["Agencies whose median moved < 1%", f"{k['n_under_1pct']} of {k['n_agencies']}"],
+               ["Log-rank test (top 8 agencies)",
+                f"chi-square {k['logrank_chi2']:,.2f}, df {k['logrank_df']}, p < 1e-300"],
+               ["Cox model concordance", f"{k['cox_concordance']:.4f} ({k['cox_sample']:,}-row sample)"],
+               ["Proportional hazards violations (p < 0.05)",
+                f"{k['ph_violating']} of {k['ph_covariates']} covariates"],
+           ]), "",
+           "### Stage 2: Statistical testing", "",
+           table(["Measure", "Value"], [
+               ["Closed requests tested", f"{k['n_closed']:,}"],
+               ["Epsilon-squared: agency", f"{k['eps']['agency']:.6f}"],
+               ["Epsilon-squared: season", f"{k['eps']['season']:.6f}"],
+               ["Epsilon-squared: borough", f"{k['eps']['borough']:.6f}"],
+               ["Agency vs next-largest factor", f"{k['eps_ratio_vs_next']:,.1f}x"],
+               ["Kruskal-Wallis p-values (all three)", "< 1e-300"],
+               ["Bootstrap", f"{k['n_boot']:,} resamples per group, seed {common.SEED}, no subsampling"],
+               ["Widest agency median CI",
+                f"{k['boot_widest']['agency']} {h(k['boot_widest']['ci_lower'])} - "
+                f"{h(k['boot_widest']['ci_upper'])} h"],
+           ]), "",
+           "### Stage 3: Prediction model", "",
+           table(["Measure", "Value"], [
+               ["Train / test requests", f"{k['train_rows']:,} (Jan-Sep) / {k['test_rows']:,} (Oct-Dec)"],
+               ["Test share closed within 7 days", f"{k['test_pct_within_7d']:.2f}%"],
+               ["ROC AUC: majority-class baseline", f"{k['baseline_auc']:.4f}"],
+               [f"ROC AUC: {k['runner_up']}", f"{k['runner_up_auc']:.4f}"],
+               [f"ROC AUC: {k['best_model']} (best)", f"{k['best_auc']:.4f}"],
+               [f"Slow class (not within 7 days), {k['best_model']}",
+                f"precision {k['best_slow']['precision']:.4f}, recall {k['best_slow']['recall']:.4f}, "
+                f"F1 {k['best_slow']['f1']:.4f}"],
+               [f"Slow class, {k['runner_up']}",
+                f"precision {k['runner_up_slow']['precision']:.4f}, recall "
+                f"{k['runner_up_slow']['recall']:.4f}, F1 {k['runner_up_slow']['f1']:.4f}"],
+               ["Brier score (best model)", f"{k['brier']:.4f}"],
+               ["Top 3 features (AUC drop when shuffled)",
+                "; ".join(f"{f} {d:.4f}" for f, d in k["top3_features"])],
+               ["Agency + complaint type shuffled together", f"{k['pair_drop']:.4f}"],
+           ]), ""]
+    return out
+
+
+def limitations_section(k):
+    return ["## Limitations", "",
+            "- **Censoring assumption.** Kaplan-Meier and Cox assume a request that's still open "
+            "is no different from others that have been open as long (non-informative "
+            "censoring). If agencies leave certain hard cases open on purpose, the survival "
+            f"medians are still biased. {k['excluded_unknown_time']:,} requests with an unknown "
+            "closing time are left out entirely.",
+            f"- **Proportional hazards fails** for {k['ph_violating']} of {k['ph_covariates']} "
+            "covariates, so the Cox hazard ratios are averages over time, not constant effects. "
+            f"The Cox model is fit on a {k['cox_sample']:,}-row sample and the assumption test on "
+            "a smaller one; a second sample was used to check stability.",
+            "- **Closing time is an administrative record.** \"Closed\" means closed in the "
+            "system, not necessarily fixed, and some agencies appear to close certain request "
+            "types on a fixed schedule (e.g. near exactly 60 days), which shapes every "
+            "time-based result.",
+            "- **Stage 2 uses closed requests only.** Kruskal-Wallis and the bootstrap need an "
+            "observed time; the bootstrap CIs reflect sampling noise only, not data-quality "
+            "problems, which is why they're so narrow.",
+            "- **Agency and complaint type overlap.** Most complaint types belong to one agency, "
+            "so their separate effects (in the Cox model, the effect sizes and the feature "
+            "importance) can't be cleanly split apart.",
+            "- **The prediction model covers one year.** It's tested only on Oct-Dec 2025, "
+            "can't learn month effects (test months never appear in training), uses a fixed "
+            "0.5 threshold, and its permutation importance is measured on a "
+            f"{k['perm_rows']:,}-row sample of the test set.",
+            "- **Descriptive, not causal.** None of these methods show *why* an agency is slow; "
+            "staffing, workflows and how each agency closes requests aren't in the data.",
+            "- **One snapshot of a live dataset.** Requests keep closing after the snapshot "
+            "date, so rerunning the download later will shift the numbers slightly.", ""]
+
+
 # --- Render --------------------------------------------------------------------
 
 def render():
@@ -444,6 +534,12 @@ def render():
              "Generated by the scripts in `analysis/`. Every number below is read from "
              "`results/data/*.json`, written by those scripts; rerun them to reproduce it.", ""]
     figures = []
+    all_stages = all((common.DATA_DIR / f).exists()
+                     for f in ("survival.json", "stats.json", "prediction.json"))
+    if all_stages:
+        from key_numbers import key_numbers
+        k = key_numbers()
+        lines += summary_section(k)
     survival = load("survival.json")
     if survival:
         lines += survival_section(survival)
@@ -461,6 +557,8 @@ def render():
         lines += ["## Figures", ""]
         lines += [f"- `results/figures/{name}`: {text}" for name, text in figures]
         lines.append("")
+    if all_stages:
+        lines += limitations_section(k)
     path = common.RESULTS_DIR / "results.md"
     path.write_text("\n".join(lines), encoding="utf-8")
     print(f"saved {path.relative_to(common.PROJECT_ROOT)}")
