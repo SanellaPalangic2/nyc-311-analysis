@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "fact_requests.created_month",
-              "nativeQueryRef": "created_month"
+              "nativeQueryRef": "created_month",
+              "displayName": "Month created"
             }
           ]
         },

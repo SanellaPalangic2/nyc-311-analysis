@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "dim_borough.borough",
-              "nativeQueryRef": "borough"
+              "nativeQueryRef": "borough",
+              "displayName": "Borough"
             }
           ]
         }

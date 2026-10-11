@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "dim_complaint_type.complaint_type",
-              "nativeQueryRef": "complaint_type"
+              "nativeQueryRef": "complaint_type",
+              "displayName": "Complaint type"
             }
           ]
         },
@@ -45,7 +46,8 @@
                 }
               },
               "queryRef": "dim_borough.borough",
-              "nativeQueryRef": "borough"
+              "nativeQueryRef": "borough",
+              "displayName": "Borough"
             }
           ]
         },
@@ -150,6 +152,26 @@
               }
             ],
             "metadata": "fact_requests.Ratio to Citywide"
+          }
+        }
+      ],
+      "subTotals": [
+        {
+          "properties": {
+            "rowSubtotals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "columnSubtotals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
           }
         }
       ]

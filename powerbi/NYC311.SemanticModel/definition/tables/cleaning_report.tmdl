@@ -16,7 +16,7 @@ table cleaning_report
 
 	column rows_affected
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		summarizeBy: none
 		sourceColumn: rows_affected
 		lineageTag: 0ce79fef-b31b-51ff-a990-407561b4153e

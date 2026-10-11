@@ -2,10 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
   "name": "agencies_v06",
   "position": {
-    "x": 640,
+    "x": 440,
     "y": 145,
     "z": 6000,
-    "width": 620,
+    "width": 820,
     "height": 560,
     "tabOrder": 6000
   },
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "dim_agency.agency_name",
-              "nativeQueryRef": "agency_name"
+              "nativeQueryRef": "agency_name",
+              "displayName": "Agency"
             },
             {
               "field": {
@@ -55,7 +56,8 @@
                 }
               },
               "queryRef": "fact_requests.Median Hours",
-              "nativeQueryRef": "Median Hours"
+              "nativeQueryRef": "Median Hours",
+              "displayName": "Median h"
             },
             {
               "field": {
@@ -69,7 +71,8 @@
                 }
               },
               "queryRef": "fact_requests.P90 Hours",
-              "nativeQueryRef": "P90 Hours"
+              "nativeQueryRef": "P90 Hours",
+              "displayName": "P90 h"
             },
             {
               "field": {
@@ -83,7 +86,8 @@
                 }
               },
               "queryRef": "fact_requests.% Closed Within 30 Days",
-              "nativeQueryRef": "% Closed Within 30 Days"
+              "nativeQueryRef": "% Closed Within 30 Days",
+              "displayName": "% within 30 days"
             },
             {
               "field": {
@@ -97,7 +101,8 @@
                 }
               },
               "queryRef": "fact_requests.% No Close Date",
-              "nativeQueryRef": "% No Close Date"
+              "nativeQueryRef": "% No Close Date",
+              "displayName": "% no close date"
             }
           ]
         }

@@ -211,7 +211,10 @@ def table_tmdl(table, spec, hide_table=False):
         if kind == "date":
             lines.append("\t\tformatString: yyyy-mm-dd")
         elif kind == "int":
-            lines.append("\t\tformatString: 0")
+            # Counts get a thousands separator (3,655,042); IDs, flags,
+            # months and step numbers don't.
+            fmt = "#,0" if col in ("rows_affected", "n_requests") else "0"
+            lines.append(f"\t\tformatString: {fmt}")
         # Numbers in these tables are IDs, flags or pre-computed values, so
         # Power BI shouldn't add them up by default; the measures do the math.
         lines.append(f"\t\tsummarizeBy: none")
@@ -308,8 +311,25 @@ def ref(field):
     return f"{field[kind]['Expression']['SourceRef']['Entity']}.{field[kind]['Property']}"
 
 
-def projection(field):
-    return {"field": field, "queryRef": ref(field), "nativeQueryRef": ref(field).split(".", 1)[1]}
+# Readable names shown on slicers, axes and table headers instead of the raw
+# column names (e.g. "Month created" rather than "created_month").
+DISPLAY_NAMES = {
+    "borough": "Borough", "season": "Season", "agency": "Agency code",
+    "agency_name": "Agency", "complaint_type": "Complaint type", "main_agency": "Agency",
+    "created_month": "Month created", "step": "Step", "rule": "Rule",
+    "rows_affected": "Rows affected", "action": "Action",
+}
+
+
+def projection(field, display=None):
+    """A field placed in a visual. `display` overrides the name shown in the
+    visual (used to keep table headers short); otherwise columns get their
+    readable name from DISPLAY_NAMES and measures keep their own name."""
+    p = {"field": field, "queryRef": ref(field), "nativeQueryRef": ref(field).split(".", 1)[1]}
+    name = display or (DISPLAY_NAMES.get(field["Column"]["Property"]) if "Column" in field else None)
+    if name:
+        p["displayName"] = name
+    return p
 
 
 def literal(value):
@@ -354,8 +374,10 @@ class Page:
         n = len(self.visuals) + 1
         visual = {"visualType": visual_type}
         if roles:
+            # A field can be given as (field, "Short name") to rename it here only.
             visual["query"] = {"queryState": {
-                role: {"projections": [projection(f) for f in fields]}
+                role: {"projections": [projection(*f) if isinstance(f, tuple) else projection(f)
+                                       for f in fields]}
                 for role, fields in roles.items()
             }}
             if sort:
@@ -461,8 +483,13 @@ def build_pages():
              ("P90 Hours", "90th percentile hours"),
              ("% Closed Within 30 Days", "% closed within 30 days"),
              ("% No Close Date", "% with no close date")]
+    # Display units "None" (1): show 3,655,042, not Power BI's default "4M".
+    # The card's own category label is hidden because the title already says it.
+    card_format = {"labels": [{"properties": {"labelDisplayUnits": literal(1)}}],
+                   "categoryLabels": [{"properties": {"show": literal(False)}}]}
     for i, (m, title) in enumerate(cards):
-        p.add("card", 20 + i * 250, 145, 236, 110, {"Values": [measure(m)]}, title=title)
+        p.add("card", 20 + i * 250, 145, 236, 110, {"Values": [measure(m)]}, title=title,
+              objects=card_format)
     month = col("fact_requests", "created_month")
     categorical_axis = {"categoryAxis": [{"properties": {"axisType": literal("Categorical")}}]}
     p.add("lineChart", 20, 270, 610, 430, {"Category": [month], "Y": [measure("Median Hours")]},
@@ -479,14 +506,18 @@ def build_pages():
                              (f"NYPD handles {f['nypd_share']}% of all requests with a "
                               f"{f['nypd_median']} h median.", 10, False)])
     slicers(p)
-    agency = col("dim_agency", "agency_name")
-    p.add("clusteredBarChart", 20, 145, 600, 560,
-          {"Category": [agency], "Y": [measure("Median Hours")],
+    # Bar chart uses the short agency code so labels aren't cut off; the table
+    # next to it has the full names. Table headers are kept short so every
+    # column fits without a scrollbar.
+    p.add("clusteredBarChart", 20, 145, 400, 560,
+          {"Category": [col("dim_agency", "agency")], "Y": [measure("Median Hours")],
            "Tooltips": [measure("P90 Hours"), measure("Requests"), measure("% No Close Date")]},
           title="Median hours to close, by agency", sort=(measure("Median Hours"), "Descending"))
-    p.add("tableEx", 640, 145, 620, 560,
-          {"Values": [agency, measure("Requests"), measure("Median Hours"), measure("P90 Hours"),
-                      measure("% Closed Within 30 Days"), measure("% No Close Date")]},
+    p.add("tableEx", 440, 145, 820, 560,
+          {"Values": [col("dim_agency", "agency_name"), measure("Requests"),
+                      (measure("Median Hours"), "Median h"), (measure("P90 Hours"), "P90 h"),
+                      (measure("% Closed Within 30 Days"), "% within 30 days"),
+                      (measure("% No Close Date"), "% no close date")]},
           title="Agency summary", sort=(measure("Median Hours"), "Descending"))
     pages.append(p)
 
@@ -501,10 +532,13 @@ def build_pages():
         "properties": {"backColor": {"solid": {"color": {"expr": measure("No Close Date Color")}}}},
         "selector": {"metadata": ref(measure("% No Close Date"))},
     }]}
+    # P90 left out and headers kept short so the orange "% no close date"
+    # column (the point of this page) fits without scrolling.
     p.add("tableEx", 20, 145, 780, 560,
           {"Values": [ctype, col("dim_complaint_type", "main_agency"), measure("Requests"),
-                      measure("Median Days"), measure("P90 Hours"),
-                      measure("% Closed Within 30 Days"), measure("% No Close Date")]},
+                      (measure("Median Days"), "Median days"),
+                      (measure("% Closed Within 30 Days"), "% within 30 days"),
+                      (measure("% No Close Date"), "% no close date")]},
           title="Slowest complaint types (median days, closed requests only)",
           sort=(measure("Median Days"), "Descending"), filters=[has_1000], objects=no_close_color)
     p.add("clusteredBarChart", 820, 145, 440, 560,
@@ -534,8 +568,13 @@ def build_pages():
         }}}}}},
         "selector": {"data": [{"dataViewWildcard": {"matchingOption": 1}}], "metadata": ref(ratio)},
     }]}
+    # No totals on the ratio matrix: a "Total" ratio (e.g. Bronx across all
+    # ten types) mixes types with very different speeds and reads as nonsense.
+    no_totals = {"subTotals": [{"properties": {"rowSubtotals": literal(False),
+                                               "columnSubtotals": literal(False)}}]}
     p.add("pivotTable", 20, 75, 1240, 315, {**rows, "Values": [ratio]},
-          title="Ratio to citywide median", filters=matrix_filters, objects=gradient)
+          title="Ratio to citywide median", filters=matrix_filters,
+          objects={**gradient, **no_totals})
     p.add("pivotTable", 20, 400, 1240, 305, {**rows, "Values": [measure("Median Hours")]},
           title="Median hours to close", filters=matrix_filters)
     pages.append(p)

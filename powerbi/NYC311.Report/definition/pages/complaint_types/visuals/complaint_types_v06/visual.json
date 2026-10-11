@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "dim_complaint_type.complaint_type",
-              "nativeQueryRef": "complaint_type"
+              "nativeQueryRef": "complaint_type",
+              "displayName": "Complaint type"
             }
           ]
         },

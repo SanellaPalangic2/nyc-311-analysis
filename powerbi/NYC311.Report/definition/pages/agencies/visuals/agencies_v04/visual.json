@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "dim_agency.agency_name",
-              "nativeQueryRef": "agency_name"
+              "nativeQueryRef": "agency_name",
+              "displayName": "Agency"
             }
           ]
         }

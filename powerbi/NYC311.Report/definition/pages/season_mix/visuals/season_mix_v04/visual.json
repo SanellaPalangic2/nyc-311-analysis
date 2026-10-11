@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "dim_season.season",
-              "nativeQueryRef": "season"
+              "nativeQueryRef": "season",
+              "displayName": "Season"
             }
           ]
         },

@@ -15,7 +15,7 @@ table dim_complaint_type
 
 	column n_requests
 		dataType: int64
-		formatString: 0
+		formatString: #,0
 		summarizeBy: none
 		sourceColumn: n_requests
 		lineageTag: b1a40d8a-7d34-5f6d-b8a0-7cc930f98b23
