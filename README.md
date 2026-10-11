@@ -6,6 +6,8 @@ An end-to-end analysis of **3,655,042 NYC 311 service requests created in 2025**
 
 **Stack:** Python (pandas, requests, psycopg) · PostgreSQL · SQL · matplotlib · pytest · Power BI
 
+[live demo](https://nyc-311-dashboard-y8su.onrender.com/)
+
 ---
 
 ## Key findings
