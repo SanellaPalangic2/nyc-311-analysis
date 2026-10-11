@@ -24,7 +24,7 @@ Overall: median **6.61 h**, 90th percentile **409.46 h**, mean **237.29 h**. **9
 
 ## Live dashboard (Streamlit)
 
-**Live dashboard:** _add your Render URL here after deploying_ ([deploy steps](docs/deploy_render.md))
+**Live dashboard:** https://nyc-311-dashboard-y8su.onrender.com/ (free Render plan: the first visit after a quiet period takes about a minute to wake up; [deploy steps](docs/deploy_render.md))
 
 An interactive web app in [`app/`](app/) with four pages: overview metrics, a resolution-time explorer (filter by agency, borough and season), Kaplan-Meier survival curves with an agency selector, and the prediction model's results. It reads only ~0.1 MB of pre-aggregated files built by `analysis/build_app_data.py`, never the 3.6M raw rows or the database, so it needs no credentials. Run it locally with `streamlit run app/streamlit_app.py`.
 
