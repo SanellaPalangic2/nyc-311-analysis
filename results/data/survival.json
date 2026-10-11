@@ -1,0 +1,616 @@
+{
+  "snapshot": "2026-10-09 13:54:53",
+  "counts": {
+    "rows_in_clean_table": 3655042,
+    "events_closed": 3599434,
+    "censored_still_open": 48668,
+    "excluded_closed_status_without_date": 6024,
+    "excluded_closed_before_created": 916,
+    "excluded_placeholder_date": 0,
+    "rows_used": 3648102
+  },
+  "overall": {
+    "median_closed_only": 6.610277777777778,
+    "km_median": 7.123055555555555,
+    "km_ci_lower": 7.0808333333333335,
+    "km_ci_upper": 7.166388888888889
+  },
+  "agencies": [
+    {
+      "agency": "NYPD",
+      "n": 1717526,
+      "censored": 0,
+      "pct_censored": 0.0,
+      "median_closed_only": 1.2619444444444443,
+      "km_median": 1.2619444444444443,
+      "km_ci_lower": 1.258888888888889,
+      "km_ci_upper": 1.2652777777777775,
+      "difference_hours": 0.0,
+      "difference_pct": 0.0
+    },
+    {
+      "agency": "HPD",
+      "n": 774535,
+      "censored": 3131,
+      "pct_censored": 0.4042425455273164,
+      "median_closed_only": 79.18527777777778,
+      "km_median": 79.6511111111111,
+      "km_ci_lower": 79.39277777777778,
+      "km_ci_upper": 79.91055555555556,
+      "difference_hours": 0.4658333333333218,
+      "difference_pct": 0.5882827545804875
+    },
+    {
+      "agency": "DSNY",
+      "n": 326739,
+      "censored": 3141,
+      "pct_censored": 0.9613177490290414,
+      "median_closed_only": 32.70430555555556,
+      "km_median": 33.918055555555554,
+      "km_ci_lower": 33.46666666666667,
+      "km_ci_upper": 34.416666666666664,
+      "difference_hours": 1.2137499999999974,
+      "difference_pct": 3.711285041470067
+    },
+    {
+      "agency": "DOT",
+      "n": 211268,
+      "censored": 5055,
+      "pct_censored": 2.392695533635004,
+      "median_closed_only": 46.32888888888889,
+      "km_median": 48.70583333333333,
+      "km_ci_lower": 48.21527777777778,
+      "km_ci_upper": 49.17888888888889,
+      "difference_hours": 2.3769444444444403,
+      "difference_pct": 5.1305880660015255
+    },
+    {
+      "agency": "DEP",
+      "n": 197137,
+      "censored": 2449,
+      "pct_censored": 1.2422832852280394,
+      "median_closed_only": 21.566666666666663,
+      "km_median": 21.98333333333333,
+      "km_ci_lower": 21.85,
+      "km_ci_upper": 22.15,
+      "difference_hours": 0.41666666666666785,
+      "difference_pct": 1.9319938176197895
+    },
+    {
+      "agency": "DPR",
+      "n": 110855,
+      "censored": 15442,
+      "pct_censored": 13.929908438951784,
+      "median_closed_only": 213.85611111111112,
+      "km_median": 381.8238888888889,
+      "km_ci_lower": 373.8572222222222,
+      "km_ci_upper": 387.9036111111111,
+      "difference_hours": 167.9677777777778,
+      "difference_pct": 78.54242598216351
+    },
+    {
+      "agency": "DOB",
+      "n": 103068,
+      "censored": 0,
+      "pct_censored": 0.0,
+      "median_closed_only": 276.1152777777778,
+      "km_median": 276.1136111111111,
+      "km_ci_lower": 271.48805555555555,
+      "km_ci_upper": 285.7786111111111,
+      "difference_hours": -0.0016666666667219943,
+      "difference_pct": -0.0006036126215599542
+    },
+    {
+      "agency": "DOHMH",
+      "n": 83396,
+      "censored": 3577,
+      "pct_censored": 4.28917454074536,
+      "median_closed_only": 24.147777777777776,
+      "km_median": 27.21611111111111,
+      "km_ci_lower": 25.64472222222222,
+      "km_ci_upper": 29.587222222222223,
+      "difference_hours": 3.068333333333335,
+      "difference_pct": 12.706483228270379
+    },
+    {
+      "agency": "DHS",
+      "n": 45459,
+      "censored": 3,
+      "pct_censored": 0.006599353263380188,
+      "median_closed_only": 8.057500000000001,
+      "km_median": 8.058055555555555,
+      "km_ci_lower": 7.898888888888889,
+      "km_ci_upper": 8.219722222222222,
+      "difference_hours": 0.000555555555553866,
+      "difference_pct": 0.006894887440941557
+    },
+    {
+      "agency": "TLC",
+      "n": 36225,
+      "censored": 6174,
+      "pct_censored": 17.043478260869566,
+      "median_closed_only": 1659.0027777777775,
+      "km_median": 2489.079444444445,
+      "km_ci_lower": 2424.083055555556,
+      "km_ci_upper": 2537.051111111111,
+      "difference_hours": 830.0766666666675,
+      "difference_pct": 50.03467611902069
+    },
+    {
+      "agency": "EDC",
+      "n": 20554,
+      "censored": 9673,
+      "pct_censored": 47.06139924102364,
+      "median_closed_only": 7845.185555555556,
+      "km_median": 8636.69,
+      "km_ci_lower": 8621.230833333333,
+      "km_ci_upper": 8645.194722222222,
+      "difference_hours": 791.5044444444447,
+      "difference_pct": 10.089046828012144
+    },
+    {
+      "agency": "DCWP",
+      "n": 18278,
+      "censored": 13,
+      "pct_censored": 0.07112375533428165,
+      "median_closed_only": 99.17694444444444,
+      "km_median": 99.385,
+      "km_ci_lower": 95.55916666666668,
+      "km_ci_upper": 109.17333333333332,
+      "difference_hours": 0.20805555555556055,
+      "difference_pct": 0.20978217943799046
+    },
+    {
+      "agency": "DOE",
+      "n": 1737,
+      "censored": 0,
+      "pct_censored": 0.0,
+      "median_closed_only": 1317.1966666666667,
+      "km_median": 1317.1966666666667,
+      "km_ci_lower": 1149.7225,
+      "km_ci_upper": 1514.2216666666666,
+      "difference_hours": 0.0,
+      "difference_pct": 0.0
+    },
+    {
+      "agency": "OOS",
+      "n": 1111,
+      "censored": 0,
+      "pct_censored": 0.0,
+      "median_closed_only": 1008.2525,
+      "km_median": 1008.2525,
+      "km_ci_lower": 1003.4772222222222,
+      "km_ci_upper": 1015.8172222222222,
+      "difference_hours": 0.0,
+      "difference_pct": 0.0
+    },
+    {
+      "agency": "OTI",
+      "n": 214,
+      "censored": 10,
+      "pct_censored": 4.672897196261682,
+      "median_closed_only": 355.4191666666667,
+      "km_median": 358.87083333333334,
+      "km_ci_lower": 335.88694444444445,
+      "km_ci_upper": 398.8158333333333,
+      "difference_hours": 3.451666666666654,
+      "difference_pct": 0.9711537785197254
+    }
+  ],
+  "top8": [
+    "NYPD",
+    "HPD",
+    "DSNY",
+    "DOT",
+    "DEP",
+    "DPR",
+    "DOB",
+    "DOHMH"
+  ],
+  "logrank": {
+    "agencies": [
+      "NYPD",
+      "HPD",
+      "DSNY",
+      "DOT",
+      "DEP",
+      "DPR",
+      "DOB",
+      "DOHMH"
+    ],
+    "n": 3524524,
+    "test_statistic": 3088648.60891962,
+    "degrees_of_freedom": 7,
+    "p_value": 0.0
+  },
+  "cox": {
+    "sample_size": 250000,
+    "seed": 42,
+    "references": {
+      "agency": "NYPD",
+      "borough": "BROOKLYN",
+      "season": "Winter"
+    },
+    "top_types": [
+      "Illegal Parking",
+      "Noise - Residential",
+      "HEAT/HOT WATER",
+      "Noise - Street/Sidewalk",
+      "Blocked Driveway",
+      "UNSANITARY CONDITION",
+      "Water System",
+      "Street Condition",
+      "PLUMBING",
+      "Abandoned Vehicle"
+    ],
+    "dropped_no_events": [],
+    "small_agencies_grouped": [
+      "DOE",
+      "OOS",
+      "OTI"
+    ],
+    "small_agency_max": 5000,
+    "concordance": 0.7704244929145506,
+    "n_events_in_sample": 246652,
+    "hazard_ratios": [
+      {
+        "covariate": "agency: DCWP",
+        "hr": 0.03473667050699013,
+        "hr_lower": 0.03279932779073002,
+        "hr_upper": 0.03678844534893869,
+        "p": 0.0
+      },
+      {
+        "covariate": "agency: DEP",
+        "hr": 0.07097767388579286,
+        "hr_lower": 0.06901340135904398,
+        "hr_upper": 0.072997853909975,
+        "p": 0.0
+      },
+      {
+        "covariate": "agency: DHS",
+        "hr": 0.09141329102349383,
+        "hr_lower": 0.08785511013099308,
+        "hr_upper": 0.09511558022392204,
+        "p": 0.0
+      },
+      {
+        "covariate": "agency: DOB",
+        "hr": 0.024034955708902097,
+        "hr_lower": 0.02330673822355706,
+        "hr_upper": 0.024785926301133035,
+        "p": 0.0
+      },
+      {
+        "covariate": "agency: DOHMH",
+        "hr": 0.032601153162838396,
+        "hr_lower": 0.03154473468650183,
+        "hr_upper": 0.033692950602042665,
+        "p": 0.0
+      },
+      {
+        "covariate": "agency: DOT",
+        "hr": 0.043125378537567066,
+        "hr_lower": 0.04194264086358038,
+        "hr_upper": 0.044341468150694105,
+        "p": 0.0
+      },
+      {
+        "covariate": "agency: DPR",
+        "hr": 0.016479212824661724,
+        "hr_lower": 0.015960744332487217,
+        "hr_upper": 0.017014523236722794,
+        "p": 0.0
+      },
+      {
+        "covariate": "agency: DSNY",
+        "hr": 0.07331068352776336,
+        "hr_lower": 0.07169600595478226,
+        "hr_upper": 0.07496172552063045,
+        "p": 0.0
+      },
+      {
+        "covariate": "agency: EDC",
+        "hr": 0.004348107219230671,
+        "hr_lower": 0.00403295165851954,
+        "hr_upper": 0.004687890654475664,
+        "p": 0.0
+      },
+      {
+        "covariate": "agency: HPD",
+        "hr": 0.028307672997541482,
+        "hr_lower": 0.027633454788404305,
+        "hr_upper": 0.028998341201694228,
+        "p": 0.0
+      },
+      {
+        "covariate": "agency: TLC",
+        "hr": 0.010649667803977194,
+        "hr_lower": 0.01014567423676691,
+        "hr_upper": 0.011178697609278865,
+        "p": 0.0
+      },
+      {
+        "covariate": "agency: small agencies (DOE, OOS, OTI)",
+        "hr": 0.01607432345838847,
+        "hr_lower": 0.014006114555251173,
+        "hr_upper": 0.01844793383815532,
+        "p": 0.0
+      },
+      {
+        "covariate": "borough: BRONX",
+        "hr": 0.8773295959746665,
+        "hr_lower": 0.8673299207867172,
+        "hr_upper": 0.8874445600526542,
+        "p": 6.710324643491598e-111
+      },
+      {
+        "covariate": "borough: MANHATTAN",
+        "hr": 1.0940663273229299,
+        "hr_lower": 1.0810777326745238,
+        "hr_upper": 1.10721097327629,
+        "p": 2.9066846252219254e-49
+      },
+      {
+        "covariate": "borough: QUEENS",
+        "hr": 0.9636773811481071,
+        "hr_lower": 0.95317190994759,
+        "hr_upper": 0.9742986393582843,
+        "p": 3.6991474102483494e-11
+      },
+      {
+        "covariate": "borough: STATEN ISLAND",
+        "hr": 1.0492037873181426,
+        "hr_lower": 1.0262009772364848,
+        "hr_upper": 1.0727222169357293,
+        "p": 2.1696573527008607e-05
+      },
+      {
+        "covariate": "season: Fall",
+        "hr": 1.1831761528825009,
+        "hr_lower": 1.1699043633414132,
+        "hr_upper": 1.1965985020788408,
+        "p": 9.359013021330353e-188
+      },
+      {
+        "covariate": "season: Spring",
+        "hr": 1.069942425716632,
+        "hr_lower": 1.0576164227410012,
+        "hr_upper": 1.0824120822381875,
+        "p": 2.7833805201677748e-30
+      },
+      {
+        "covariate": "season: Summer",
+        "hr": 1.1899621264149813,
+        "hr_lower": 1.176212200438972,
+        "hr_upper": 1.2038727890882255,
+        "p": 4.293469895193965e-189
+      },
+      {
+        "covariate": "type: Illegal Parking",
+        "hr": 0.7085831244189733,
+        "hr_lower": 0.6961019682107059,
+        "hr_upper": 0.7212880686172324,
+        "p": 0.0
+      },
+      {
+        "covariate": "type: Noise - Residential",
+        "hr": 0.800943540036886,
+        "hr_lower": 0.7860602652233609,
+        "hr_upper": 0.8161086149603707,
+        "p": 5.278038250139631e-119
+      },
+      {
+        "covariate": "type: HEAT/HOT WATER",
+        "hr": 3.643895229101037,
+        "hr_lower": 3.568136119862066,
+        "hr_upper": 3.721262865156217,
+        "p": 0.0
+      },
+      {
+        "covariate": "type: Noise - Street/Sidewalk",
+        "hr": 1.035445050621893,
+        "hr_lower": 1.0116606655653473,
+        "hr_upper": 1.0597886122796185,
+        "p": 0.0033058777590746187
+      },
+      {
+        "covariate": "type: Blocked Driveway",
+        "hr": 0.6566910452922721,
+        "hr_lower": 0.6414344574994802,
+        "hr_upper": 0.6723105126721483,
+        "p": 2.35300716693689e-269
+      },
+      {
+        "covariate": "type: UNSANITARY CONDITION",
+        "hr": 0.9700343100787846,
+        "hr_lower": 0.9450125990554845,
+        "hr_upper": 0.9957185371607692,
+        "p": 0.022503571346254386
+      },
+      {
+        "covariate": "type: Water System",
+        "hr": 1.4247004025359493,
+        "hr_lower": 1.375817905286637,
+        "hr_upper": 1.4753196837943574,
+        "p": 7.28495499186097e-88
+      },
+      {
+        "covariate": "type: Street Condition",
+        "hr": 1.4115630694199217,
+        "hr_lower": 1.3621466212579914,
+        "hr_upper": 1.4627722653748065,
+        "p": 3.7696689503453404e-80
+      },
+      {
+        "covariate": "type: PLUMBING",
+        "hr": 1.086173370552451,
+        "hr_lower": 1.0521030189942453,
+        "hr_upper": 1.1213470255270934,
+        "p": 3.7041456897204256e-07
+      },
+      {
+        "covariate": "type: Abandoned Vehicle",
+        "hr": 0.5517742547961298,
+        "hr_lower": 0.5340785833089222,
+        "hr_upper": 0.570056238483769,
+        "p": 5.806215314983514e-280
+      }
+    ],
+    "stability_max_abs_log_hr_diff": 0.07662698255085676,
+    "stability_worst_covariate": "agency: small agencies (DOE, OOS, OTI)"
+  },
+  "ph_test": {
+    "sample_size": 50000,
+    "seed": 42,
+    "n_covariates": 29,
+    "n_violating_p05": 22,
+    "rows": [
+      {
+        "covariate": "agency: DCWP",
+        "test_statistic": 0.0376411166497499,
+        "p": 0.8461655565204925
+      },
+      {
+        "covariate": "agency: DEP",
+        "test_statistic": 51.1540143411817,
+        "p": 8.539586707959008e-13
+      },
+      {
+        "covariate": "agency: DHS",
+        "test_statistic": 100.7188871426403,
+        "p": 1.0600987664027567e-23
+      },
+      {
+        "covariate": "agency: DOB",
+        "test_statistic": 264.3251208976342,
+        "p": 1.9578181511987607e-59
+      },
+      {
+        "covariate": "agency: DOHMH",
+        "test_statistic": 956.5110098136105,
+        "p": 5.0981838673557145e-210
+      },
+      {
+        "covariate": "agency: DOT",
+        "test_statistic": 187.735679074082,
+        "p": 9.921985990684357e-43
+      },
+      {
+        "covariate": "agency: DPR",
+        "test_statistic": 157.7519541393074,
+        "p": 3.5062299355192445e-36
+      },
+      {
+        "covariate": "agency: DSNY",
+        "test_statistic": 86.3071974287871,
+        "p": 1.540468591331245e-20
+      },
+      {
+        "covariate": "agency: EDC",
+        "test_statistic": 1.7881016449028866,
+        "p": 0.18115762976805888
+      },
+      {
+        "covariate": "agency: HPD",
+        "test_statistic": 8.329995737312979,
+        "p": 0.003899574930788911
+      },
+      {
+        "covariate": "agency: TLC",
+        "test_statistic": 0.7561048309797611,
+        "p": 0.3845502614662164
+      },
+      {
+        "covariate": "agency: small agencies (DOE, OOS, OTI)",
+        "test_statistic": 0.029311105888848683,
+        "p": 0.8640626820537171
+      },
+      {
+        "covariate": "borough: BRONX",
+        "test_statistic": 82.07899862539529,
+        "p": 1.307546082014601e-19
+      },
+      {
+        "covariate": "borough: MANHATTAN",
+        "test_statistic": 107.5337490620074,
+        "p": 3.400649867990909e-25
+      },
+      {
+        "covariate": "borough: QUEENS",
+        "test_statistic": 13.197968019220891,
+        "p": 0.0002802528120612232
+      },
+      {
+        "covariate": "borough: STATEN ISLAND",
+        "test_statistic": 11.350010254059049,
+        "p": 0.0007544755257564812
+      },
+      {
+        "covariate": "season: Fall",
+        "test_statistic": 12.414420470334415,
+        "p": 0.00042603120262955436
+      },
+      {
+        "covariate": "season: Spring",
+        "test_statistic": 26.02124679859079,
+        "p": 3.376805970192783e-07
+      },
+      {
+        "covariate": "season: Summer",
+        "test_statistic": 68.8981546234871,
+        "p": 1.0368179463427e-16
+      },
+      {
+        "covariate": "type: Abandoned Vehicle",
+        "test_statistic": 0.5895346564225418,
+        "p": 0.4425991206220239
+      },
+      {
+        "covariate": "type: Blocked Driveway",
+        "test_statistic": 5.392623924536919,
+        "p": 0.020222040546269627
+      },
+      {
+        "covariate": "type: HEAT/HOT WATER",
+        "test_statistic": 17.321606994239247,
+        "p": 3.155781173097792e-05
+      },
+      {
+        "covariate": "type: Illegal Parking",
+        "test_statistic": 12.204660823588892,
+        "p": 0.0004767026841393436
+      },
+      {
+        "covariate": "type: Noise - Residential",
+        "test_statistic": 23.461428647061034,
+        "p": 1.2744338132511147e-06
+      },
+      {
+        "covariate": "type: Noise - Street/Sidewalk",
+        "test_statistic": 4.909773329710893,
+        "p": 0.026705145422814224
+      },
+      {
+        "covariate": "type: PLUMBING",
+        "test_statistic": 0.8325664218984441,
+        "p": 0.36153146965893945
+      },
+      {
+        "covariate": "type: Street Condition",
+        "test_statistic": 4.482039016149597,
+        "p": 0.03425283252307346
+      },
+      {
+        "covariate": "type: UNSANITARY CONDITION",
+        "test_statistic": 1.631858079705594,
+        "p": 0.20144624254183377
+      },
+      {
+        "covariate": "type: Water System",
+        "test_statistic": 774.1762311999686,
+        "p": 2.221919667613532e-170
+      }
+    ]
+  }
+}

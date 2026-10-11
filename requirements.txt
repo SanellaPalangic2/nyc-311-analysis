@@ -15,3 +15,5 @@ matplotlib==3.11.2
 seaborn==0.13.2
 # Tests
 pytest==9.1.1
+# Survival analysis (analysis/survival.py)
+lifelines==0.30.3

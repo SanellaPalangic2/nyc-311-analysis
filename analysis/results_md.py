@@ -1,0 +1,259 @@
+"""Render results/results.md from the numbers each stage saved in results/data/.
+
+Run:  python analysis/results_md.py   (each stage script also calls it)
+
+No number in results.md is typed by hand: every value is read from the JSON
+a stage script wrote, so rerunning the scripts regenerates the document.
+Sections appear only for stages that have been run.
+"""
+import json
+import math
+
+import common
+
+
+def load(name):
+    path = common.DATA_DIR / name
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
+def h(x):
+    """Hours with 2 decimals, or a note when a median was never reached."""
+    return "not reached" if x is None else f"{x:,.2f}"
+
+
+def pval(p):
+    if p == 0:
+        return "< 1e-300 (underflows to 0)"
+    return f"{p:.2e}" if p < 0.001 else f"{p:.4f}"
+
+
+def table(header, rows):
+    lines = ["| " + " | ".join(header) + " |",
+             "|" + "|".join("---:" if i else "---" for i in range(len(header))) + "|"]
+    lines += ["| " + " | ".join(str(c) for c in r) + " |" for r in rows]
+    return "\n".join(lines)
+
+
+# --- Stage 1 -------------------------------------------------------------------
+
+def survival_section(s):
+    c = s["counts"]
+    o = s["overall"]
+    out = ["## Stage 1: Survival analysis", "",
+           "Script: `analysis/survival.py`. Still-open requests are treated as **censored**: "
+           "we know they took at least as long as they've been open, and survival methods use "
+           f"that instead of dropping them. Snapshot (latest close date in the data): "
+           f"**{s['snapshot']}**.", "",
+           "### Rows used", "",
+           table(["Group", "Rows"], [
+               ["Rows in clean_311", f"{c['rows_in_clean_table']:,}"],
+               ["Closed (event observed)", f"{c['events_closed']:,}"],
+               ["**Still open (censored)**", f"**{c['censored_still_open']:,}**"],
+               ["Left out: status Closed but no close date (time unknown)",
+                f"{c['excluded_closed_status_without_date']:,}"],
+               ["Left out: closed before created", f"{c['excluded_closed_before_created']:,}"],
+               ["Left out: placeholder close date", f"{c['excluded_placeholder_date']:,}"],
+               ["Rows used", f"{c['rows_used']:,}"],
+           ]), ""]
+
+    diff = o["km_median"] - o["median_closed_only"]
+    out += ["### Overall median", "",
+            table(["Method", "Median hours", "95% CI"], [
+                ["Closed requests only (earlier analysis)", h(o["median_closed_only"]), "-"],
+                ["Kaplan-Meier (open requests censored)", h(o["km_median"]),
+                 f"{h(o['km_ci_lower'])} - {h(o['km_ci_upper'])}"],
+            ]), "",
+            f"Including open requests moves the overall median by {diff:+,.2f} h "
+            f"({100 * diff / o['median_closed_only']:+.2f}%).", ""]
+
+    rows = []
+    for r in s["agencies"]:
+        ci = ("-" if r["km_ci_lower"] is None and r["km_ci_upper"] is None
+              else f"{h(r['km_ci_lower'])} - {h(r['km_ci_upper'])}")
+        rows.append([r["agency"], f"{r['n']:,}", f"{r['censored']:,} ({r['pct_censored']:.2f}%)",
+                     h(r["median_closed_only"]), h(r["km_median"]), ci,
+                     "-" if r["difference_hours"] is None else f"{r['difference_hours']:+,.2f}",
+                     "-" if r["difference_pct"] is None else f"{r['difference_pct']:+.2f}%"])
+    not_reached = [r["agency"] for r in s["agencies"] if r["km_median"] is None]
+    intro = "Top 8 by volume are in the Kaplan-Meier chart; all 15 are listed."
+    if not_reached:
+        intro += (" \"Not reached\" means more than half of that agency's requests were still "
+                  "open at the end of follow-up, so the median can't be estimated.")
+    out += ["### Median time to resolution by agency", "", intro, "",
+            table(["Agency", "Requests used", "Censored", "Median, closed only (h)",
+                   "KM median (h)", "KM 95% CI (h)", "Change (h)", "Change"], rows), "",
+            "Where nothing is censored, tiny changes (like +0.00 or -0.00) aren't bias: the "
+            "Kaplan-Meier median is the first time the curve reaches 50%, while the earlier "
+            "median averages the two middle values.", ""]
+
+    # Bias explanation, computed from the table
+    reached = [r for r in s["agencies"] if r["difference_hours"] is not None]
+    by_change = sorted(reached, key=lambda r: r["difference_pct"], reverse=True)
+    small = [r["agency"] for r in reached if abs(r["difference_pct"]) < 1]
+    out += ["**How much did excluding open requests bias the earlier medians?** "
+            f"Overall, the median rises from {h(o['median_closed_only'])} h to {h(o['km_median'])} h "
+            f"({100 * diff / o['median_closed_only']:+.2f}%); only "
+            f"{100 * c['censored_still_open'] / c['rows_used']:.2f}% of requests are still open. "
+            "The bias is concentrated in agencies with many open requests: "
+            + "; ".join(f"{r['agency']} {h(r['median_closed_only'])} h -> {h(r['km_median'])} h "
+                        f"({r['difference_pct']:+.2f}%, {r['pct_censored']:.2f}% censored)"
+                        for r in by_change[:3])
+            + (f", and for {', '.join(not_reached)} the true median can't even be estimated "
+               "because more than half of requests are still open." if not_reached else ".")
+            + f" {len(small)} of {len(reached)} agencies changed by less than 1%."]
+    worst_drop = min(r["difference_hours"] for r in reached)
+    if worst_drop > -0.01:
+        out[-1] += (" No agency's median went down beyond rounding: leaving out open requests "
+                    "made every agency look faster or the same, never slower.")
+    most_open = max(reached, key=lambda r: r["pct_censored"])
+    if most_open["agency"] != by_change[0]["agency"]:
+        out[-1] += (f" The share still open isn't the whole story: {most_open['agency']} has the "
+                    f"most open requests ({most_open['pct_censored']:.2f}% censored) but its median "
+                    f"changed by {most_open['difference_pct']:+.2f}%, because the size of the bias "
+                    "also depends on how the open requests' waiting times compare with the "
+                    "closed ones.")
+    out.append("")
+
+    lr = s["logrank"]
+    out += ["### Log-rank test (top 8 agencies)", "",
+            f"Tests whether the 8 survival curves are all the same. Chi-square = "
+            f"{lr['test_statistic']:,.2f}, df = {lr['degrees_of_freedom']}, p = {pval(lr['p_value'])}, "
+            f"n = {lr['n']:,}. The curves differ, but with millions of rows any difference is "
+            "significant, so the size of the gaps (table above) matters more than the p-value.", ""]
+
+    cx = s["cox"]
+    out += ["### Cox proportional hazards model", "",
+            f"Fit on a random sample of {cx['sample_size']:,} requests with a known borough "
+            f"(seed {cx['seed']}; {cx['n_events_in_sample']:,} closed in the sample), because "
+            "fitting all 3.6M rows is slow and memory-heavy in lifelines. Covariates: agency, "
+            f"borough, season, and the top {len(cx['top_types'])} complaint types by volume. "
+            f"Reference groups: {cx['references']['agency']}, {cx['references']['borough'].title()}, "
+            f"{cx['references']['season']}, and complaint types outside the top "
+            f"{len(cx['top_types'])}. Agencies with fewer than {cx['small_agency_max']:,} "
+            f"requests in 2025 ({', '.join(cx['small_agencies_grouped'])}) share one "
+            "\"small agencies\" group: alone they'd have too few requests in the sample for a "
+            "stable estimate.", "",
+            "Hazard ratio above 1 = closes faster than the reference at any given moment; "
+            "below 1 = slower. Complaint-type ratios are relative to other types *within the "
+            "same agency*, since agency is also in the model.", "",
+            f"- Concordance index: {cx['concordance']:.4f} (0.5 = random ordering, 1 = perfect)",
+            f"- Stability: refitting on a second independent sample (seed {cx['seed'] + 1}) "
+            f"changed log hazard ratios by at most {cx['stability_max_abs_log_hr_diff']:.4f} "
+            f"({cx['stability_worst_covariate']}).",
+            ]
+    if cx["dropped_no_events"]:
+        out.append(f"- Left out (no closed requests in the sample): {', '.join(cx['dropped_no_events'])}")
+    out += ["", table(["Covariate", "Hazard ratio", "95% CI", "p"],
+                      [[r["covariate"], f"{r['hr']:.4f}", f"{r['hr_lower']:.4f} - {r['hr_upper']:.4f}",
+                        pval(r["p"])] for r in cx["hazard_ratios"]]), ""]
+
+    # How big are the agency effects compared with borough and season?
+    def hr_range(prefix):
+        vals = [r["hr"] for r in cx["hazard_ratios"] if r["covariate"].startswith(prefix)]
+        return min(vals), max(vals)
+    a_lo, a_hi = hr_range("agency:")
+    b_lo, b_hi = hr_range("borough:")
+    s_lo, s_hi = hr_range("season:")
+    # Largest effect in each group, on the log scale (so 0.5 and 2.0 count equally)
+    biggest = {g: max(abs(math.log(lo)), abs(math.log(hi)))
+               for g, (lo, hi) in {"agency": (a_lo, a_hi), "borough": (b_lo, b_hi),
+                                   "season": (s_lo, s_hi)}.items()}
+    text = (f"**Size of effects:** agency hazard ratios range from {a_lo:.4f} to {a_hi:.4f}, "
+            f"borough ratios from {b_lo:.4f} to {b_hi:.4f}, and season ratios from {s_lo:.4f} "
+            f"to {s_hi:.4f}.")
+    if a_hi < 1:
+        text += " Every agency closes at a fraction of NYPD's rate."
+    if biggest["agency"] > max(biggest["borough"], biggest["season"]):
+        text += (" Holding the other factors fixed, agency moves the closing rate far more "
+                 "than borough or season.")
+    out += [text, ""]
+
+    # Compare the adjusted season effects with the earlier unadjusted season result
+    seasons = {r["covariate"].split(": ")[1]: r["hr"] for r in cx["hazard_ratios"]
+               if r["covariate"].startswith("season:")}
+    mix_file = common.PROJECT_ROOT / "outputs" / "powerbi" / "summary_season_mix.csv"
+    if mix_file.exists() and seasons:
+        import csv
+        with open(mix_file, newline="", encoding="utf-8") as f:
+            mix = {r["season"]: float(r["median_hours_other_agencies"]) for r in csv.DictReader(f)}
+        raw_slowest = max(mix, key=mix.get)
+        if raw_slowest in seasons and seasons[raw_slowest] > 1:
+            ph_season = {r["covariate"]: r["p"] for r in s["ph_test"]["rows"]}
+            out += [f"**Season, revisited:** the earlier unadjusted medians had {raw_slowest} as "
+                    f"the slowest season for non-NYPD agencies ({mix[raw_slowest]:,.2f} h). After "
+                    "adjusting for agency and complaint type, the Cox model has "
+                    f"{raw_slowest} closing *faster* than {cx['references']['season']} "
+                    f"(hazard ratio {seasons[raw_slowest]:.4f}). So the raw {raw_slowest} slowdown "
+                    "is not explained by season alone; a different mix of agencies and complaint "
+                    "types in that season is one possible explanation. Treat this as tentative: "
+                    f"the season effects fail the proportional hazards test (e.g. "
+                    f"season: {raw_slowest} p = {pval(ph_season.get('season: ' + raw_slowest, 1))}), "
+                    "so they are averages over time.", ""]
+
+    ph = s["ph_test"]
+    holds = ph["n_violating_p05"] == 0
+    out += ["### Does the proportional hazards assumption hold?", "",
+            f"Test (scaled Schoenfeld residuals, rank time transform), run on a separate "
+            f"{ph['sample_size']:,}-row fit with the same covariates (seed {ph['seed']}), because "
+            "its run time grows with roughly the square of the sample size: "
+            f"**{ph['n_violating_p05']} of {ph['n_covariates']} covariates violate it at p < 0.05.**", ""]
+    if holds:
+        out.append("The assumption holds: each hazard ratio is a constant multiple over time.")
+    else:
+        out += ["In plain terms: the Cox model assumes each group's closing rate is a *fixed "
+                "multiple* of the reference group's, at every point in time. That isn't true here: "
+                "the ratio between groups changes over time (for example, an agency whose median "
+                "is about an hour does most of its closing early, while agencies with medians of "
+                "days or weeks close later). `1d_ph_check_loglog.png` shows this visually: "
+                "under the assumption, the agency curves would run parallel.", "",
+                "What it means: each hazard ratio is best read as an **average effect over the "
+                "follow-up period**, not a constant one, and its direction and rough size are "
+                "more trustworthy than its exact value. The Kaplan-Meier medians and curves don't "
+                "rely on this assumption, so they're the main result. (With "
+                f"{ph['sample_size']:,} rows the test detects even tiny violations, so the "
+                "visual check matters as much as the p-values.) A stratified Cox model or "
+                "time-varying effects would be the next step.", ""]
+    out += [table(["Covariate", "Test statistic", "p"],
+                  [[r["covariate"], f"{r['test_statistic']:,.2f}", pval(r["p"])] for r in ph["rows"]]),
+            ""]
+    return out
+
+
+def survival_figures():
+    return [
+        ("1a_km_top8_agencies.png", "Kaplan-Meier curves for the 8 largest agencies: the share "
+         "of requests still open over time, labeled where each crosses 50% (its median)."),
+        ("1b_median_bias_by_agency.png", "For each agency, the median from closed requests only "
+         "next to the Kaplan-Meier median that counts open requests; long bars show where "
+         "dropping open requests biased the result."),
+        ("1c_cox_hazard_ratios.png", "Cox model hazard ratios with 95% CIs: which agencies, "
+         "boroughs, seasons and complaint types close faster or slower than the reference."),
+        ("1d_ph_check_loglog.png", "Proportional hazards check: log(-log S) curves that cross "
+         "instead of running parallel show the assumption does not hold."),
+    ]
+
+
+# --- Render --------------------------------------------------------------------
+
+def render():
+    lines = ["# Advanced analysis results", "",
+             "Generated by the scripts in `analysis/`. Every number below is read from "
+             "`results/data/*.json`, written by those scripts; rerun them to reproduce it.", ""]
+    figures = []
+    survival = load("survival.json")
+    if survival:
+        lines += survival_section(survival)
+        figures += survival_figures()
+
+    if figures:
+        lines += ["## Figures", ""]
+        lines += [f"- `results/figures/{name}`: {text}" for name, text in figures]
+        lines.append("")
+    path = common.RESULTS_DIR / "results.md"
+    path.write_text("\n".join(lines), encoding="utf-8")
+    print(f"saved {path.relative_to(common.PROJECT_ROOT)}")
+
+
+if __name__ == "__main__":
+    render()
