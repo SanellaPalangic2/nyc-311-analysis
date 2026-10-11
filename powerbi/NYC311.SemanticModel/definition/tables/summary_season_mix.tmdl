@@ -1,0 +1,55 @@
+table summary_season_mix
+	isHidden
+	lineageTag: 8ee2b1b2-d5e8-504a-99ef-d758d485018a
+
+	column season
+		dataType: string
+		summarizeBy: none
+		sourceColumn: season
+		lineageTag: 37e78392-c2f4-53fe-8404-e983fb9a381d
+
+	column n_requests
+		dataType: double
+		summarizeBy: none
+		sourceColumn: n_requests
+		lineageTag: 13833a15-1fa7-5490-8ef9-93b6c17dd919
+
+	column pct_nypd
+		dataType: double
+		summarizeBy: none
+		sourceColumn: pct_nypd
+		lineageTag: 2e29d155-d8f0-50a0-bd15-117ea5a96a10
+
+	column median_hours_all
+		dataType: double
+		summarizeBy: none
+		sourceColumn: median_hours_all
+		lineageTag: 27bbe15d-d852-54b4-a3a6-43d067745dd2
+
+	column median_hours_nypd
+		dataType: double
+		summarizeBy: none
+		sourceColumn: median_hours_nypd
+		lineageTag: 9a638446-0b16-5d0d-9ba2-ae3e3f390d10
+
+	column median_hours_other_agencies
+		dataType: double
+		summarizeBy: none
+		sourceColumn: median_hours_other_agencies
+		lineageTag: 27d8951a-56be-5f8d-8ea6-f8dbefb4dda7
+
+	column pct_30d_other_agencies
+		dataType: double
+		summarizeBy: none
+		sourceColumn: pct_30d_other_agencies
+		lineageTag: 0a081c82-3919-50fc-a30f-8ca5617f20c2
+
+	partition summary_season_mix = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "summary_season_mix.csv"), [Delimiter = ",", Columns = 7, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"season", type text}, {"n_requests", type number}, {"pct_nypd", type number}, {"median_hours_all", type number}, {"median_hours_nypd", type number}, {"median_hours_other_agencies", type number}, {"pct_30d_other_agencies", type number}}, "en-US")
+				in
+				    Typed

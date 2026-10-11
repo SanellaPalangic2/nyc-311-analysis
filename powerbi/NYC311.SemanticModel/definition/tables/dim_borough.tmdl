@@ -1,0 +1,34 @@
+table dim_borough
+	lineageTag: b881b796-d2d7-5c7a-970a-955d24e992be
+
+	column borough
+		dataType: string
+		summarizeBy: none
+		sourceColumn: borough
+		sortByColumn: borough_order
+		lineageTag: 7050326c-2d6a-5ea5-84db-c86bed87165c
+
+	column borough_order
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: borough_order
+		lineageTag: b3f48a18-93cc-5642-a30e-b33db14485e1
+
+	column is_known
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: is_known
+		lineageTag: 7cf59b30-557f-54e5-b2b4-1b6b71a29428
+
+	partition dim_borough = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "dim_borough.csv"), [Delimiter = ",", Columns = 3, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"borough", type text}, {"borough_order", Int64.Type}, {"is_known", Int64.Type}}, "en-US")
+				in
+				    Typed

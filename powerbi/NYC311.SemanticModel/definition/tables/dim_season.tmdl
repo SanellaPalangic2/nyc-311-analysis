@@ -1,0 +1,33 @@
+table dim_season
+	lineageTag: 563a457a-3d95-54b2-a878-b5e5be0e9136
+
+	column season
+		dataType: string
+		summarizeBy: none
+		sourceColumn: season
+		sortByColumn: season_order
+		lineageTag: c4c6be07-50f3-597a-b497-d743d32c338e
+
+	column season_order
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: season_order
+		lineageTag: d56b1f51-83c9-5523-9107-e956a2ce1171
+
+	column months
+		dataType: string
+		summarizeBy: none
+		sourceColumn: months
+		lineageTag: 273b99e6-ba94-577a-8a1b-f96eca203229
+
+	partition dim_season = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "dim_season.csv"), [Delimiter = ",", Columns = 3, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"season", type text}, {"season_order", Int64.Type}, {"months", type text}}, "en-US")
+				in
+				    Typed

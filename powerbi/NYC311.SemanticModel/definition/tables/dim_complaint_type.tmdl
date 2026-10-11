@@ -1,0 +1,45 @@
+table dim_complaint_type
+	lineageTag: c1eed504-60e1-5807-a313-df1a7b47cae4
+
+	column complaint_type
+		dataType: string
+		summarizeBy: none
+		sourceColumn: complaint_type
+		lineageTag: 13276848-eebc-5939-a83a-f12a72e4ecb8
+
+	column main_agency
+		dataType: string
+		summarizeBy: none
+		sourceColumn: main_agency
+		lineageTag: 751d10f6-9bc2-5fdb-8ee9-215692aa2982
+
+	column n_requests
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: n_requests
+		lineageTag: b1a40d8a-7d34-5f6d-b8a0-7cc930f98b23
+
+	column has_1000_plus
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: has_1000_plus
+		lineageTag: c76b271d-e6b5-581d-b7e0-be39bba401b4
+
+	column is_top10_volume
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: is_top10_volume
+		lineageTag: a57d3c26-d210-508d-9030-5f47cc5ac35a
+
+	partition dim_complaint_type = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "dim_complaint_type.csv"), [Delimiter = ",", Columns = 5, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"complaint_type", type text}, {"main_agency", type text}, {"n_requests", Int64.Type}, {"has_1000_plus", Int64.Type}, {"is_top10_volume", Int64.Type}}, "en-US")
+				in
+				    Typed

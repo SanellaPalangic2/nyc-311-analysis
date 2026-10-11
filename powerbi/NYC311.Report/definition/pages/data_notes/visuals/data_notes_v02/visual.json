@@ -1,0 +1,119 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "data_notes_v02",
+  "position": {
+    "x": 20,
+    "y": 65,
+    "z": 2000,
+    "width": 780,
+    "height": 640,
+    "tabOrder": 2000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "cleaning_report"
+                    }
+                  },
+                  "Property": "step"
+                }
+              },
+              "queryRef": "cleaning_report.step",
+              "nativeQueryRef": "step"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "cleaning_report"
+                    }
+                  },
+                  "Property": "rule"
+                }
+              },
+              "queryRef": "cleaning_report.rule",
+              "nativeQueryRef": "rule"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "cleaning_report"
+                    }
+                  },
+                  "Property": "rows_affected"
+                }
+              },
+              "queryRef": "cleaning_report.rows_affected",
+              "nativeQueryRef": "rows_affected"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "cleaning_report"
+                    }
+                  },
+                  "Property": "action"
+                }
+              },
+              "queryRef": "cleaning_report.action",
+              "nativeQueryRef": "action"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "cleaning_report"
+                  }
+                },
+                "Property": "step"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": false
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Cleaning rules and rows affected'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

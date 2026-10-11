@@ -1,0 +1,79 @@
+table summary_slowest_types
+	isHidden
+	lineageTag: 0cd12255-7163-54ff-b9af-54457e1092f1
+
+	column complaint_type
+		dataType: string
+		summarizeBy: none
+		sourceColumn: complaint_type
+		lineageTag: 39982730-a05b-5420-9af7-60dd2f31bd5f
+
+	column main_agency
+		dataType: string
+		summarizeBy: none
+		sourceColumn: main_agency
+		lineageTag: e75e197a-f7af-52e9-b89b-f86eac41be00
+
+	column n_requests
+		dataType: double
+		summarizeBy: none
+		sourceColumn: n_requests
+		lineageTag: be2c6916-4430-5f9b-9430-b9761597d6c7
+
+	column n_with_time
+		dataType: double
+		summarizeBy: none
+		sourceColumn: n_with_time
+		lineageTag: b35cdc28-668f-5d97-9b89-f661c0b0cee8
+
+	column median_hours
+		dataType: double
+		summarizeBy: none
+		sourceColumn: median_hours
+		lineageTag: d9a11331-9189-5058-b202-9c970861337c
+
+	column median_days
+		dataType: double
+		summarizeBy: none
+		sourceColumn: median_days
+		lineageTag: 1a8331b8-46d4-5274-861b-c7bcbd08c401
+
+	column p90_hours
+		dataType: double
+		summarizeBy: none
+		sourceColumn: p90_hours
+		lineageTag: a8c71d8b-6780-5ef6-8fa4-15fc70489332
+
+	column pct_no_close_date
+		dataType: double
+		summarizeBy: none
+		sourceColumn: pct_no_close_date
+		lineageTag: 8af141f6-9755-50f8-9c52-58da4420a6c4
+
+	column pct_closed_within_30d
+		dataType: double
+		summarizeBy: none
+		sourceColumn: pct_closed_within_30d
+		lineageTag: 6cdb12f2-e47f-56f8-9e2f-e6876456f1a6
+
+	column rank_by_median
+		dataType: double
+		summarizeBy: none
+		sourceColumn: rank_by_median
+		lineageTag: 9fedf1d9-af1e-51de-98ca-e7b9c39ff312
+
+	column rank_by_30d
+		dataType: double
+		summarizeBy: none
+		sourceColumn: rank_by_30d
+		lineageTag: 66fb28f4-d65f-565a-ad3a-31ff9517e1f0
+
+	partition summary_slowest_types = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "summary_slowest_types.csv"), [Delimiter = ",", Columns = 11, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"complaint_type", type text}, {"main_agency", type text}, {"n_requests", type number}, {"n_with_time", type number}, {"median_hours", type number}, {"median_days", type number}, {"p90_hours", type number}, {"pct_no_close_date", type number}, {"pct_closed_within_30d", type number}, {"rank_by_median", type number}, {"rank_by_30d", type number}}, "en-US")
+				in
+				    Typed

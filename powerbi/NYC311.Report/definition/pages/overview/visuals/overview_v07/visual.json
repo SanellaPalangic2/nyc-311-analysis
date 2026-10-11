@@ -1,0 +1,59 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "overview_v07",
+  "position": {
+    "x": 520,
+    "y": 145,
+    "z": 7000,
+    "width": 236,
+    "height": 110,
+    "tabOrder": 7000
+  },
+  "visual": {
+    "visualType": "card",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_requests"
+                    }
+                  },
+                  "Property": "P90 Hours"
+                }
+              },
+              "queryRef": "fact_requests.P90 Hours",
+              "nativeQueryRef": "P90 Hours"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'90th percentile hours'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

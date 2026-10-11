@@ -58,7 +58,9 @@ QUERIES = {
             complaint_type,
             mode() WITHIN GROUP (ORDER BY agency)    AS main_agency,
             COUNT(*)                                 AS n_requests,
-            (COUNT(*) >= 1000)::int                  AS has_1000_plus
+            (COUNT(*) >= 1000)::int                  AS has_1000_plus,
+            -- Same top 10 as 06_complaint_type_by_borough.sql (ROW_NUMBER, like its LIMIT 10)
+            (ROW_NUMBER() OVER (ORDER BY COUNT(*) DESC) <= 10)::int AS is_top10_volume
         FROM clean_311
         GROUP BY complaint_type
         ORDER BY complaint_type

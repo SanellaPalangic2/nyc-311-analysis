@@ -22,8 +22,18 @@ data/processed/*
 outputs/powerbi/*
 !outputs/powerbi/.gitkeep
 
+# Power BI Project (powerbi/): the text files are committed, but Power BI
+# Desktop also writes a local data cache and per-user settings. The cache
+# holds all imported rows, so it must stay out of git.
+powerbi/**/.pbi/cache.abf
+powerbi/**/.pbi/localSettings.json
+powerbi/**/.pbi/unappliedChanges.json
+
 # Power BI files embed the imported data, so they're data too.
+# To publish the dashboard file, check it's under GitHub's 100 MB limit, then
+# un-comment the line below (it re-includes this one file).
 *.pbix
+# !outputs/nyc311_dashboard.pbix
 
 # Catch-all for data formats anywhere in the repo
 *.csv

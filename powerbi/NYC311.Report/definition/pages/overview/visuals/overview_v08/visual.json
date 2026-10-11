@@ -1,0 +1,59 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "overview_v08",
+  "position": {
+    "x": 770,
+    "y": 145,
+    "z": 8000,
+    "width": 236,
+    "height": 110,
+    "tabOrder": 8000
+  },
+  "visual": {
+    "visualType": "card",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_requests"
+                    }
+                  },
+                  "Property": "% Closed Within 30 Days"
+                }
+              },
+              "queryRef": "fact_requests.% Closed Within 30 Days",
+              "nativeQueryRef": "% Closed Within 30 Days"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'% closed within 30 days'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

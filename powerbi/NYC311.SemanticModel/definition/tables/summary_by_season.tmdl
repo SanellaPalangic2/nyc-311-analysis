@@ -1,0 +1,61 @@
+table summary_by_season
+	isHidden
+	lineageTag: c6eda293-7945-5b92-8959-bb8df728e8a0
+
+	column season
+		dataType: string
+		summarizeBy: none
+		sourceColumn: season
+		lineageTag: 78e0963b-7636-5be0-88ab-1b17c3378570
+
+	column n_requests
+		dataType: double
+		summarizeBy: none
+		sourceColumn: n_requests
+		lineageTag: baa95293-a811-59ed-b28b-5be7dd9ccc1a
+
+	column n_with_time
+		dataType: double
+		summarizeBy: none
+		sourceColumn: n_with_time
+		lineageTag: 5dea5497-fbd4-5941-a2b6-7061321a4a0b
+
+	column median_hours
+		dataType: double
+		summarizeBy: none
+		sourceColumn: median_hours
+		lineageTag: 091d1b5a-6ec7-5f6b-8b3b-0367b84b79c4
+
+	column p90_hours
+		dataType: double
+		summarizeBy: none
+		sourceColumn: p90_hours
+		lineageTag: f65d1cf6-80c1-58a2-beb1-2b79b7cdc568
+
+	column mean_hours
+		dataType: double
+		summarizeBy: none
+		sourceColumn: mean_hours
+		lineageTag: 82165609-c708-5df8-ba25-9a75f366b56e
+
+	column pct_no_close_date
+		dataType: double
+		summarizeBy: none
+		sourceColumn: pct_no_close_date
+		lineageTag: 9a32d78c-f506-52ae-bf1b-8e35bc7dd0dc
+
+	column pct_closed_within_30d
+		dataType: double
+		summarizeBy: none
+		sourceColumn: pct_closed_within_30d
+		lineageTag: 96069a04-0727-5d4b-bc1d-23ee5c7ab600
+
+	partition summary_by_season = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "summary_by_season.csv"), [Delimiter = ",", Columns = 8, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"season", type text}, {"n_requests", type number}, {"n_with_time", type number}, {"median_hours", type number}, {"p90_hours", type number}, {"mean_hours", type number}, {"pct_no_close_date", type number}, {"pct_closed_within_30d", type number}}, "en-US")
+				in
+				    Typed

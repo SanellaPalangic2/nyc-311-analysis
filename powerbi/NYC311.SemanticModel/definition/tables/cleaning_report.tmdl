@@ -1,0 +1,38 @@
+table cleaning_report
+	lineageTag: 23efe037-ee36-5747-aa9d-7c2557991744
+
+	column step
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: step
+		lineageTag: 0bf9986f-af42-5e38-9806-59979702ab34
+
+	column rule
+		dataType: string
+		summarizeBy: none
+		sourceColumn: rule
+		lineageTag: 491036ec-9a9a-5f15-88dc-bb90b7cf9b1a
+
+	column rows_affected
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: rows_affected
+		lineageTag: 0ce79fef-b31b-51ff-a990-407561b4153e
+
+	column action
+		dataType: string
+		summarizeBy: none
+		sourceColumn: action
+		lineageTag: ae842da4-a78a-5467-873f-ee2d93031493
+
+	partition cleaning_report = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "cleaning_report.csv"), [Delimiter = ",", Columns = 4, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"step", Int64.Type}, {"rule", type text}, {"rows_affected", Int64.Type}, {"action", type text}}, "en-US")
+				in
+				    Typed

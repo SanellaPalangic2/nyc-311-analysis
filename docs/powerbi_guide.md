@@ -3,6 +3,34 @@
 Step-by-step instructions for building the dashboard yourself in Power BI Desktop.
 Plan on 1–2 hours the first time.
 
+## Fast path: open the generated project
+
+The finished dashboard is already in the repo as a Power BI Project:
+
+```powershell
+python src/export_powerbi.py          # CSVs (if you haven't already)
+python src/build_powerbi_project.py   # regenerates powerbi/ (optional)
+```
+
+1. Double-click `powerbi/NYC311.pbip` (or **File → Open** in Power BI Desktop).
+2. If Power BI says the data needs refreshing, click **Refresh**. Loading the
+   3.66M rows takes a few minutes.
+3. On a different computer, the CSV folder will be in a different place:
+   **Home → Transform data → Edit parameters → DataFolder**, paste the full path
+   to your `outputs/powerbi\` folder (ending with `\`), then **Refresh**.
+4. Run the **answer-key check** in section 3 below to confirm the numbers.
+5. **File → Save** keeps it as a .pbip. Power BI may rewrite some files in a newer
+   format; that's normal.
+
+The project is the same model, measures and pages described below. The rest of
+this guide explains each piece and how to build it by hand.
+
+> Report-level conditional formatting (the orange % No Close Date cells and the
+> heatmap colors on page 4) is the part most likely to need a manual touch-up.
+> If a color doesn't show, set it as described in section 5.
+
+---
+
 ## 0. Before you start
 
 1. Make the CSVs (about 2.5 minutes):

@@ -1,0 +1,4 @@
+expression DataFolder = "C:\NYC 311\outputs\powerbi\" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: 3211222a-7a9f-509f-8509-d11fa5ac361b
+
+	annotation PBI_ResultType = Text

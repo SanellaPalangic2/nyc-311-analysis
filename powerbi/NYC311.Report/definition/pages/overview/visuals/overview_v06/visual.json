@@ -1,0 +1,59 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "overview_v06",
+  "position": {
+    "x": 270,
+    "y": 145,
+    "z": 6000,
+    "width": 236,
+    "height": 110,
+    "tabOrder": 6000
+  },
+  "visual": {
+    "visualType": "card",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_requests"
+                    }
+                  },
+                  "Property": "Median Hours"
+                }
+              },
+              "queryRef": "fact_requests.Median Hours",
+              "nativeQueryRef": "Median Hours"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Median hours to close'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

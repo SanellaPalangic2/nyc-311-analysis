@@ -1,0 +1,25 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["DataFolder", "fact_requests", "dim_agency", "dim_complaint_type", "dim_borough", "dim_season", "cleaning_report", "summary_overview", "summary_by_agency", "summary_by_borough", "summary_by_season", "summary_slowest_types", "summary_type_by_borough", "summary_season_mix"]
+
+ref table fact_requests
+ref table dim_agency
+ref table dim_complaint_type
+ref table dim_borough
+ref table dim_season
+ref table cleaning_report
+ref table summary_overview
+ref table summary_by_agency
+ref table summary_by_borough
+ref table summary_by_season
+ref table summary_slowest_types
+ref table summary_type_by_borough
+ref table summary_season_mix

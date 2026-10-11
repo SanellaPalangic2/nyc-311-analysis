@@ -1,0 +1,61 @@
+table summary_by_borough
+	isHidden
+	lineageTag: 376163b1-08fa-5309-b951-cc66cb91cfef
+
+	column borough
+		dataType: string
+		summarizeBy: none
+		sourceColumn: borough
+		lineageTag: 95b96948-be28-5099-b7f9-addc6fea988c
+
+	column n_requests
+		dataType: double
+		summarizeBy: none
+		sourceColumn: n_requests
+		lineageTag: 3408a4fc-f68a-5f18-9f85-c1a98e462418
+
+	column n_with_time
+		dataType: double
+		summarizeBy: none
+		sourceColumn: n_with_time
+		lineageTag: 522aaa96-b5b9-5c17-a46a-3a53835307ad
+
+	column median_hours
+		dataType: double
+		summarizeBy: none
+		sourceColumn: median_hours
+		lineageTag: 993aa70e-f93e-523b-8912-717b4b82caf1
+
+	column p90_hours
+		dataType: double
+		summarizeBy: none
+		sourceColumn: p90_hours
+		lineageTag: bd44d400-005f-5b10-a73e-52d84cec8819
+
+	column mean_hours
+		dataType: double
+		summarizeBy: none
+		sourceColumn: mean_hours
+		lineageTag: 110ebb3c-509f-5b86-ba7c-0708c3bbbbc3
+
+	column pct_no_close_date
+		dataType: double
+		summarizeBy: none
+		sourceColumn: pct_no_close_date
+		lineageTag: a81a0dcf-ab9c-5afb-85ea-1d5a37f5a505
+
+	column pct_closed_within_30d
+		dataType: double
+		summarizeBy: none
+		sourceColumn: pct_closed_within_30d
+		lineageTag: 7dd5e168-b746-5b8b-b9fa-3f46f1db99a0
+
+	partition summary_by_borough = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "summary_by_borough.csv"), [Delimiter = ",", Columns = 8, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"borough", type text}, {"n_requests", type number}, {"n_with_time", type number}, {"median_hours", type number}, {"p90_hours", type number}, {"mean_hours", type number}, {"pct_no_close_date", type number}, {"pct_closed_within_30d", type number}}, "en-US")
+				in
+				    Typed

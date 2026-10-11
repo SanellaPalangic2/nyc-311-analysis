@@ -1,0 +1,79 @@
+table summary_overview
+	isHidden
+	lineageTag: 8eb4cf7a-072f-5723-9cb1-750a2bdaf1d4
+
+	column n_requests
+		dataType: double
+		summarizeBy: none
+		sourceColumn: n_requests
+		lineageTag: b949a248-2a4d-5fa8-8d8a-26f6eb1bc0d4
+
+	column n_with_resolution_time
+		dataType: double
+		summarizeBy: none
+		sourceColumn: n_with_resolution_time
+		lineageTag: 3c41b0f3-8a00-5245-ae30-0823335988b1
+
+	column n_complaint_types
+		dataType: double
+		summarizeBy: none
+		sourceColumn: n_complaint_types
+		lineageTag: cf6fb370-5f96-525e-8f7d-4692b83b72c2
+
+	column n_agencies
+		dataType: double
+		summarizeBy: none
+		sourceColumn: n_agencies
+		lineageTag: a23dea61-ce25-52df-b82f-1c7950d4f7f4
+
+	column first_created
+		dataType: string
+		summarizeBy: none
+		sourceColumn: first_created
+		lineageTag: 3c13a696-7b90-58c1-80c0-8d852d019d82
+
+	column last_created
+		dataType: string
+		summarizeBy: none
+		sourceColumn: last_created
+		lineageTag: 9504b96c-7d2f-5fd2-9f3e-9bff8d0185ae
+
+	column median_hours
+		dataType: double
+		summarizeBy: none
+		sourceColumn: median_hours
+		lineageTag: fce03790-d2cf-5d38-94e9-62141864ed2c
+
+	column p90_hours
+		dataType: double
+		summarizeBy: none
+		sourceColumn: p90_hours
+		lineageTag: 114956d0-b153-555d-bf5c-3f79579b3e6c
+
+	column mean_hours
+		dataType: double
+		summarizeBy: none
+		sourceColumn: mean_hours
+		lineageTag: e1c6445b-4a7c-55e9-b773-0a887d7455f2
+
+	column pct_no_close_date
+		dataType: double
+		summarizeBy: none
+		sourceColumn: pct_no_close_date
+		lineageTag: 3738415a-05eb-58d9-92fd-b0dd251a9a45
+
+	column pct_closed_within_30d
+		dataType: double
+		summarizeBy: none
+		sourceColumn: pct_closed_within_30d
+		lineageTag: 9b13f8f3-3166-55c2-bdfa-9191723cb7da
+
+	partition summary_overview = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "summary_overview.csv"), [Delimiter = ",", Columns = 11, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"n_requests", type number}, {"n_with_resolution_time", type number}, {"n_complaint_types", type number}, {"n_agencies", type number}, {"first_created", type text}, {"last_created", type text}, {"median_hours", type number}, {"p90_hours", type number}, {"mean_hours", type number}, {"pct_no_close_date", type number}, {"pct_closed_within_30d", type number}}, "en-US")
+				in
+				    Typed

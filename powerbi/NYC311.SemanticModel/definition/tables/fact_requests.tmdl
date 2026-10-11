@@ -1,0 +1,182 @@
+table fact_requests
+	lineageTag: 3ed79dce-5acc-52c3-bfce-cd052604efed
+
+	measure Requests = COUNTROWS ( fact_requests )
+		formatString: #,0
+		lineageTag: 2a76d41f-8196-5316-a071-163be28675ef
+
+	measure 'Median Hours' =
+			CALCULATE (
+			    MEDIAN ( fact_requests[resolution_hours] ),
+			    fact_requests[resolution_status] = "closed"
+			)
+		formatString: #,0.00
+		lineageTag: 056635f3-0f25-5c78-a14c-d6f63b07543a
+
+	measure 'P90 Hours' =
+			CALCULATE (
+			    PERCENTILE.INC ( fact_requests[resolution_hours], 0.9 ),
+			    fact_requests[resolution_status] = "closed"
+			)
+		formatString: #,0.00
+		lineageTag: 0d698379-00fa-57fe-a714-9850904a1135
+
+	measure 'Mean Hours' =
+			CALCULATE (
+			    AVERAGE ( fact_requests[resolution_hours] ),
+			    fact_requests[resolution_status] = "closed"
+			)
+		formatString: #,0.00
+		lineageTag: b7d27946-7cc0-524a-bd3c-bbcbc61e902c
+
+	measure 'Median Days' = DIVIDE ( [Median Hours], 24 )
+		formatString: #,0.00
+		lineageTag: 1bd20ad5-dbbb-593d-80b1-5c5f4b79f82d
+
+	measure '% Closed Within 30 Days' =
+			DIVIDE (
+			    SUM ( fact_requests[closed_within_30d] ),
+			    SUM ( fact_requests[outcome_30d_known] )
+			)
+		formatString: 0.00%
+		lineageTag: 57a35aa3-9fe3-51c2-ae83-d68702a1ab21
+
+	measure '% No Close Date' = DIVIDE ( SUM ( fact_requests[has_no_close_date] ), [Requests] )
+		formatString: 0.00%
+		lineageTag: 7d58d7a0-9bae-580b-b78b-e1130fd2d9a9
+
+	measure '% NYPD' =
+			DIVIDE (
+			    CALCULATE ( [Requests], fact_requests[agency_group] = "NYPD" ),
+			    [Requests]
+			)
+		formatString: 0.00%
+		lineageTag: 77bdd2ab-70a4-569f-8ee1-a5da36f94662
+
+	measure 'Citywide Median Hours' =
+			CALCULATE (
+			    [Median Hours],
+			    REMOVEFILTERS ( dim_borough ),
+			    dim_borough[is_known] = 1
+			)
+		formatString: #,0.00
+		lineageTag: 36f0c4b4-2f13-5784-9ae1-cf71904d4e7f
+
+	measure 'Ratio to Citywide' = DIVIDE ( [Median Hours], [Citywide Median Hours] )
+		formatString: 0.00"x"
+		lineageTag: bd217d48-3e5a-546c-9d63-8c2c1367bce2
+
+	measure 'No Close Date Color' = IF ( [% No Close Date] >= 0.2, "#eb6834", BLANK () )
+		lineageTag: 8b169cab-c3b6-5d42-8efa-23c847e33534
+
+	column unique_key
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: unique_key
+		lineageTag: 98a236f2-d07c-5f3f-9b70-903c6a77e93d
+
+	column created_date
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: created_date
+		lineageTag: 5c6afa0f-5af4-5511-97d1-e501c7b50215
+
+	column created_month
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: created_month
+		lineageTag: 9148e497-fdd0-579f-a701-e10b555a4abd
+
+	column season
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: season
+		lineageTag: af432ba0-0fc7-5eb6-835c-e3a3180c2daf
+
+	column agency
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: agency
+		lineageTag: 4d0209c5-e95f-528d-8125-ddb4b2f7362a
+
+	column agency_group
+		dataType: string
+		summarizeBy: none
+		sourceColumn: agency_group
+		lineageTag: 87159c12-315e-53d2-bd26-724156919b50
+
+	column complaint_type
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: complaint_type
+		lineageTag: ca8b352a-2536-5bf8-a2ae-9df100abc5e7
+
+	column borough
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: borough
+		lineageTag: fdeafbc1-c5df-5152-bee6-3010c0ed5664
+
+	column resolution_status
+		dataType: string
+		summarizeBy: none
+		sourceColumn: resolution_status
+		lineageTag: a83cb40f-caef-5938-95ad-5b12e486c879
+
+	column resolution_hours
+		dataType: double
+		summarizeBy: none
+		sourceColumn: resolution_hours
+		lineageTag: a13f2c55-7123-532c-8984-57d58e51b6aa
+
+	column has_no_close_date
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: has_no_close_date
+		lineageTag: 4684b54b-edd7-506c-8661-1029b9b68484
+
+	column outcome_30d_known
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: outcome_30d_known
+		lineageTag: 5029eded-0f9f-5dd4-b7bf-e23b97480854
+
+	column closed_within_30d
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: closed_within_30d
+		lineageTag: 351fef86-8779-5c08-b0ab-91f488039dc9
+
+	column is_extreme
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: is_extreme
+		lineageTag: 4e83f36f-e4b8-55bd-b7ff-e948f6b76de8
+
+	column is_zero_duration
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: is_zero_duration
+		lineageTag: 654dc17e-d196-57d1-8998-02c19456288b
+
+	partition fact_requests = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "fact_requests.csv"), [Delimiter = ",", Columns = 15, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"unique_key", Int64.Type}, {"created_date", type date}, {"created_month", Int64.Type}, {"season", type text}, {"agency", type text}, {"agency_group", type text}, {"complaint_type", type text}, {"borough", type text}, {"resolution_status", type text}, {"resolution_hours", type number}, {"has_no_close_date", Int64.Type}, {"outcome_30d_known", Int64.Type}, {"closed_within_30d", Int64.Type}, {"is_extreme", Int64.Type}, {"is_zero_duration", Int64.Type}}, "en-US")
+				in
+				    Typed

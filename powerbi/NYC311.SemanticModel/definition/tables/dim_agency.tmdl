@@ -1,0 +1,24 @@
+table dim_agency
+	lineageTag: 6e7bd39b-ec34-5f01-bc89-25b24de543a1
+
+	column agency
+		dataType: string
+		summarizeBy: none
+		sourceColumn: agency
+		lineageTag: 24a10bf7-ec39-533d-bfa0-c137a901c6f8
+
+	column agency_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: agency_name
+		lineageTag: 3265b3b7-913e-5e13-b73f-3b5a7c593a55
+
+	partition dim_agency = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "dim_agency.csv"), [Delimiter = ",", Columns = 2, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"agency", type text}, {"agency_name", type text}}, "en-US")
+				in
+				    Typed

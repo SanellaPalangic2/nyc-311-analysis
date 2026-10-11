@@ -1,0 +1,15 @@
+relationship 74979378-87bf-5c66-9faa-c1d3c39c3056
+	fromColumn: fact_requests.agency
+	toColumn: dim_agency.agency
+
+relationship caf718cd-9b2a-5b57-aa99-43b8261d90b0
+	fromColumn: fact_requests.complaint_type
+	toColumn: dim_complaint_type.complaint_type
+
+relationship f6b35c36-4868-5a0a-ab84-0d19602588ce
+	fromColumn: fact_requests.borough
+	toColumn: dim_borough.borough
+
+relationship 12bf6d8e-3666-55d6-bf64-43ba66212988
+	fromColumn: fact_requests.season
+	toColumn: dim_season.season
