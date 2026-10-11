@@ -39,3 +39,16 @@ def get_database_url():
             "DATABASE_URL is not set. Copy .env.example to .env and fill it in."
         )
     return url
+
+
+def get_engine():
+    """SQLAlchemy engine, which is what pandas.read_sql expects.
+
+    'postgresql+psycopg://' tells SQLAlchemy to use the psycopg 3 driver; plain
+    'postgresql://' would make it look for the older psycopg2, which we don't
+    install.
+    """
+    from sqlalchemy import create_engine
+
+    url = get_database_url().replace("postgresql://", "postgresql+psycopg://", 1)
+    return create_engine(url)
