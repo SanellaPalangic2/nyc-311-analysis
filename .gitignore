@@ -1,0 +1,34 @@
+# --- Secrets ---------------------------------------------------------------
+# .env holds the database password and Socrata token. Never commit it.
+.env
+
+# --- Python ----------------------------------------------------------------
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- Data files ------------------------------------------------------------
+# Raw and processed data are large and can be re-downloaded with the scripts,
+# so they stay out of git. The .gitkeep files keep the empty folders in the repo.
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# CSV exports for Power BI are data too (regenerate them with the export script).
+outputs/powerbi/*
+!outputs/powerbi/.gitkeep
+
+# Catch-all for data formats anywhere in the repo
+*.csv
+*.parquet
+*.json.gz
+
+# --- Editors / OS ----------------------------------------------------------
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

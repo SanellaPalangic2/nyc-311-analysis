@@ -1,0 +1,17 @@
+# Versions pinned so anyone who reproduces the project gets the same results.
+
+# Download from the Socrata API
+requests==2.34.2
+# Read secrets from .env
+python-dotenv==1.2.4
+# Cleaning
+pandas==3.0.6
+# PostgreSQL driver (version 3, supports fast COPY)
+psycopg[binary]==3.3.6
+# Lets pandas read query results from Postgres
+SQLAlchemy==2.1.4
+# Charts
+matplotlib==3.11.2
+seaborn==0.13.2
+# Tests
+pytest==9.1.1
