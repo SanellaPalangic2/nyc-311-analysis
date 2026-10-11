@@ -530,7 +530,10 @@ def build_pages():
     ctype = col("dim_complaint_type", "complaint_type")
     no_close_color = {"values": [{
         "properties": {"backColor": {"solid": {"color": {"expr": measure("No Close Date Color")}}}},
-        "selector": {"metadata": ref(measure("% No Close Date"))},
+        # Both parts are needed: "data" = apply to every data cell (not just
+        # totals), "metadata" = only in the % no close date column.
+        "selector": {"data": [{"dataViewWildcard": {"matchingOption": 1}}],
+                     "metadata": ref(measure("% No Close Date"))},
     }]}
     # P90 left out and headers kept short so the orange "% no close date"
     # column (the point of this page) fits without scrolling.
@@ -721,10 +724,15 @@ def main():
     if not (config.POWERBI_DIR / "fact_requests.csv").exists():
         raise SystemExit("Run src/export_powerbi.py first.")
 
-    # Rebuild only the generated folders; keep anything else in powerbi/.
+    # Rebuild only the generated files. Each folder's .pbi subfolder (Power BI's
+    # local data cache and settings, git-ignored) is kept, so reopening after a
+    # rebuild doesn't force a full data refresh.
     for folder in (MODEL_DIR, REPORT_DIR):
         if folder.exists():
-            shutil.rmtree(folder)
+            for item in folder.iterdir():
+                if item.name == ".pbi":
+                    continue
+                shutil.rmtree(item) if item.is_dir() else item.unlink()
 
     write_model()
     write_report()
