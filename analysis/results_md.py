@@ -308,6 +308,135 @@ def stats_figures():
     ]
 
 
+# --- Stage 3 -------------------------------------------------------------------
+
+def prediction_section(s):
+    c = s["counts"]
+    res = s["results"]
+    base = res["Majority-class baseline"]
+    best = s["best_model"]
+    out = ["## Stage 3: Prediction model", "",
+           "Script: `analysis/prediction.py`. Target: **closed within 7 days** of being created "
+           "(1 = yes). Still-open requests count as \"no\" (they've been open 9+ months); "
+           f"{c['outcome_unknown_excluded']:,} requests whose closing time is unknown are left "
+           "out.", "",
+           f"- **Features (known at creation only):** {', '.join(s['features'])}. Nothing from "
+           "the close date, status or resolution text is used (the script refuses to run if "
+           "one of those columns becomes a feature).",
+           f"- **Time-based split:** train on {s['split']['train']} ({c['train_rows']:,} "
+           f"requests), test on {s['split']['test']} ({c['test_rows']:,} requests). This mimics "
+           "real use: learn from the past, predict the future.",
+           f"- **Class balance:** {c['test_pct_within_7d']:.2f}% of test requests closed within "
+           f"7 days ({c['train_pct_within_7d']:.2f}% in training). So a model that always says "
+           "\"yes\" already looks good on the \"yes\" class; the **slow** class (not closed within "
+           "7 days) is where the models have to prove themselves, so metrics are shown for both.",
+           f"- **Threshold:** a request is predicted \"within 7 days\" when its predicted "
+           f"probability is at least {s['threshold']}.", ""]
+
+    rows = []
+    for name, r in res.items():
+        rows.append([name, f"{r['roc_auc']:.4f}",
+                     f"{r['within_7d']['precision']:.4f}", f"{r['within_7d']['recall']:.4f}",
+                     f"{r['within_7d']['f1']:.4f}",
+                     f"{r['slow']['precision']:.4f}", f"{r['slow']['recall']:.4f}",
+                     f"{r['slow']['f1']:.4f}"])
+    out += ["### Test-set results (Oct-Dec 2025)", "",
+            table(["Model", "ROC AUC", "Precision (within 7d)", "Recall (within 7d)",
+                   "F1 (within 7d)", "Precision (slow)", "Recall (slow)", "F1 (slow)"], rows), "",
+            table(["Model", "True slow (TN)", "False within-7d (FP)", "False slow (FN)",
+                   "True within-7d (TP)"],
+                  [[n, f"{r['confusion']['tn']:,}", f"{r['confusion']['fp']:,}",
+                    f"{r['confusion']['fn']:,}", f"{r['confusion']['tp']:,}"] for n, r in res.items()]),
+            "",
+            f"**Best model: {best}**, ROC AUC {res[best]['roc_auc']:.4f} vs "
+            f"{base['roc_auc']:.4f} for the majority-class baseline. On the slow class it reaches "
+            f"precision {res[best]['slow']['precision']:.4f} and recall "
+            f"{res[best]['slow']['recall']:.4f} (F1 {res[best]['slow']['f1']:.4f}); the baseline "
+            "never predicts a slow request, so its slow-class scores are 0."]
+    runner_up = max((n for n in res if n not in ("Majority-class baseline", best)),
+                    key=lambda n: res[n]["roc_auc"])
+    gap = res[best]["roc_auc"] - res[runner_up]["roc_auc"]
+    out[-1] += (f" {runner_up} is close behind (AUC {res[runner_up]['roc_auc']:.4f}, "
+                f"{gap:.4f} lower)")
+    if res[runner_up]["slow"]["f1"] > res[best]["slow"]["f1"]:
+        out[-1] += (f" and at the 0.5 threshold it actually scores higher on the slow class "
+                    f"(F1 {res[runner_up]['slow']['f1']:.4f} vs {res[best]['slow']['f1']:.4f}: "
+                    f"recall {res[runner_up]['slow']['recall']:.4f} vs "
+                    f"{res[best]['slow']['recall']:.4f}). AUC measures ranking across *all* "
+                    "thresholds, F1 only at one, so the threshold should be chosen for the use: "
+                    "lower it to catch more slow requests at the cost of more false alarms.")
+    else:
+        out[-1] += "."
+    out += ["",
+            "**Why the AUC is so high:** complaint type and agency are known when a request is "
+            "filed and largely decide which process handles it (Stage 2: agency alone explains "
+            "over half of the variation in resolution time). This isn't leakage: no information "
+            "from after the request was created is used.", ""]
+
+    cal = s["calibration"]
+    gaps = [abs(p - f) for p, f in zip(cal["mean_predicted"], cal["fraction_positive"])]
+    out += ["### Calibration of the best model", "",
+            f"Brier score {cal['brier']:.4f} (mean squared error of the predicted probabilities; "
+            f"lower is better). The test set was split into {len(gaps)} bins with equal numbers "
+            f"of requests; {sum(p > 0.98 for p in cal['mean_predicted'])} of them have a mean "
+            "predicted probability above 0.98 (most requests are predicted to be near-certain "
+            "to close within 7 days), so those points overlap on the chart. Predicted and actual "
+            f"shares differ by at most {max(gaps):.4f} (mean {sum(gaps) / len(gaps):.4f})"
+            + (", so a predicted probability can be read roughly at face value." if max(gaps) < 0.05
+               else "; the bins with the largest gaps are where the probabilities shouldn't be "
+                    "taken at face value."), "",
+            table(["Bin", "Mean predicted", "Actual share within 7 days"],
+                  [[i + 1, f"{p:.4f}", f"{f:.4f}"]
+                   for i, (p, f) in enumerate(zip(cal["mean_predicted"], cal["fraction_positive"]))]),
+            ""]
+
+    imp = sorted(s["permutation"]["importance"], key=lambda r: r["auc_drop"], reverse=True)
+    singles = [r for r in imp if "+" not in r["feature"]]
+    pair = next(r for r in imp if "+" in r["feature"])
+    by_name = {r["feature"]: r for r in singles}
+    top = singles[0]
+    pm = s["permutation"]
+    out += ["### Permutation feature importance", "",
+            f"Each feature is shuffled in {pm['rows']:,} random test rows ({pm['repeats']} times, "
+            f"seed {pm['seed']}) and the drop in ROC AUC is measured: the bigger the drop, the "
+            "more the model relies on it. Agency and complaint type are also shuffled together, "
+            "because they overlap heavily (most complaint types belong to a single agency).", "",
+            table(["Feature", "AUC drop", "Std. dev."],
+                  [[r["feature"], f"{r['auc_drop']:.4f}", f"{r['std']:.4f}"] for r in imp]), ""]
+    agency_rank = [r["feature"] for r in singles].index("agency") + 1
+    verdict = (f"**Does it confirm agency as the top driver?** "
+               + ("Yes: agency is the most important single feature "
+                  f"(AUC drop {by_name['agency']['auc_drop']:.4f})." if top["feature"] == "agency" else
+                  f"Not on its own: {top['feature']} is the most important single feature "
+                  f"(AUC drop {top['auc_drop']:.4f}) and agency ranks #{agency_rank} "
+                  f"({by_name['agency']['auc_drop']:.4f}). That's mostly overlap, not disagreement: "
+                  "complaint type nearly determines the agency, so when agency alone is shuffled "
+                  "the model still gets that information from complaint type."))
+    verdict += (f" Shuffled together, agency + complaint type drop AUC by "
+                f"{pair['auc_drop']:.4f}, more than any single feature, so *who handles the "
+                "request and what it's about* is the main driver.")
+    out += [verdict, "",
+            f"**About month:** the model is trained on months 1-9 and tested on 10-12, so it "
+            "never sees a test month during training. Month can only act as a trend that's "
+            "extrapolated forward, and shuffling it within Oct-Dec (AUC drop "
+            f"{by_name['month']['auc_drop']:.4f}) measures little. A model trained on several "
+            "years would be needed to learn real month effects.", ""]
+    return out
+
+
+def prediction_figures():
+    return [
+        ("3a_roc_curves.png", "ROC curves for the baseline, logistic regression and gradient "
+         "boosting on the Oct-Dec 2025 test set."),
+        ("3b_confusion_matrices.png", "Confusion matrices for the three models: how many slow "
+         "and fast requests each one got right and wrong."),
+        ("3c_calibration.png", "Calibration of the best model: predicted probability of closing "
+         "within 7 days vs the actual share, in 10 bins."),
+        ("3d_permutation_importance.png", "Permutation feature importance for the best model, "
+         "including agency and complaint type shuffled together."),
+    ]
+
+
 # --- Render --------------------------------------------------------------------
 
 def render():
@@ -323,6 +452,10 @@ def render():
     if stats:
         lines += stats_section(stats)
         figures += stats_figures()
+    prediction = load("prediction.json")
+    if prediction:
+        lines += prediction_section(prediction)
+        figures += prediction_figures()
 
     if figures:
         lines += ["## Figures", ""]

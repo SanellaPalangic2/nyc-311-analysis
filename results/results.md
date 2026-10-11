@@ -194,6 +194,69 @@ Method: percentile bootstrap, 1,000 resamples per group, random seed 42, using *
 
 Most intervals are very narrow because the groups are so large. The widest is DOE (1,149.19 - 1,514.26 h, 1,737 closed requests): small groups, and groups whose times are spread out around the middle, get wider intervals. These CIs cover closed requests only; Stage 1's Kaplan-Meier medians also account for open requests.
 
+## Stage 3: Prediction model
+
+Script: `analysis/prediction.py`. Target: **closed within 7 days** of being created (1 = yes). Still-open requests count as "no" (they've been open 9+ months); 6,940 requests whose closing time is unknown are left out.
+
+- **Features (known at creation only):** agency, complaint_type, borough, channel, month, day_of_week, hour. Nothing from the close date, status or resolution text is used (the script refuses to run if one of those columns becomes a feature).
+- **Time-based split:** train on Jan-Sep 2025 (created) (2,674,661 requests), test on Oct-Dec 2025 (created) (973,441 requests). This mimics real use: learn from the past, predict the future.
+- **Class balance:** 83.71% of test requests closed within 7 days (82.67% in training). So a model that always says "yes" already looks good on the "yes" class; the **slow** class (not closed within 7 days) is where the models have to prove themselves, so metrics are shown for both.
+- **Threshold:** a request is predicted "within 7 days" when its predicted probability is at least 0.5.
+
+### Test-set results (Oct-Dec 2025)
+
+| Model | ROC AUC | Precision (within 7d) | Recall (within 7d) | F1 (within 7d) | Precision (slow) | Recall (slow) | F1 (slow) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Majority-class baseline | 0.5000 | 0.8371 | 1.0000 | 0.9113 | 0.0000 | 0.0000 | 0.0000 |
+| Logistic regression | 0.9544 | 0.9535 | 0.9254 | 0.9392 | 0.6669 | 0.7680 | 0.7139 |
+| Gradient boosting | 0.9556 | 0.9313 | 0.9474 | 0.9393 | 0.7033 | 0.6407 | 0.6705 |
+
+| Model | True slow (TN) | False within-7d (FP) | False slow (FN) | True within-7d (TP) |
+|---|---:|---:|---:|---:|
+| Majority-class baseline | 0 | 158,593 | 0 | 814,848 |
+| Logistic regression | 121,796 | 36,797 | 60,828 | 754,020 |
+| Gradient boosting | 101,611 | 56,982 | 42,869 | 771,979 |
+
+**Best model: Gradient boosting**, ROC AUC 0.9556 vs 0.5000 for the majority-class baseline. On the slow class it reaches precision 0.7033 and recall 0.6407 (F1 0.6705); the baseline never predicts a slow request, so its slow-class scores are 0. Logistic regression is close behind (AUC 0.9544, 0.0012 lower) and at the 0.5 threshold it actually scores higher on the slow class (F1 0.7139 vs 0.6705: recall 0.7680 vs 0.6407). AUC measures ranking across *all* thresholds, F1 only at one, so the threshold should be chosen for the use: lower it to catch more slow requests at the cost of more false alarms.
+
+**Why the AUC is so high:** complaint type and agency are known when a request is filed and largely decide which process handles it (Stage 2: agency alone explains over half of the variation in resolution time). This isn't leakage: no information from after the request was created is used.
+
+### Calibration of the best model
+
+Brier score 0.0622 (mean squared error of the predicted probabilities; lower is better). The test set was split into 10 bins with equal numbers of requests; 6 of them have a mean predicted probability above 0.98 (most requests are predicted to be near-certain to close within 7 days), so those points overlap on the chart. Predicted and actual shares differ by at most 0.0824 (mean 0.0142); the bins with the largest gaps are where the probabilities shouldn't be taken at face value.
+
+| Bin | Mean predicted | Actual share within 7 days |
+|---|---:|---:|
+| 1 | 0.2325 | 0.2424 |
+| 2 | 0.5122 | 0.4297 |
+| 3 | 0.7727 | 0.7374 |
+| 4 | 0.9632 | 0.9678 |
+| 5 | 0.9899 | 0.9989 |
+| 6 | 0.9966 | 0.9973 |
+| 7 | 0.9999 | 1.0000 |
+| 8 | 0.9999 | 1.0000 |
+| 9 | 0.9999 | 1.0000 |
+| 10 | 0.9999 | 1.0000 |
+
+### Permutation feature importance
+
+Each feature is shuffled in 200,000 random test rows (5 times, seed 42) and the drop in ROC AUC is measured: the bigger the drop, the more the model relies on it. Agency and complaint type are also shuffled together, because they overlap heavily (most complaint types belong to a single agency).
+
+| Feature | AUC drop | Std. dev. |
+|---|---:|---:|
+| agency + complaint_type | 0.4597 | 0.0009 |
+| complaint_type | 0.2755 | 0.0010 |
+| agency | 0.0671 | 0.0004 |
+| borough | 0.0043 | 0.0001 |
+| hour | 0.0004 | 0.0000 |
+| channel | 0.0004 | 0.0000 |
+| day_of_week | 0.0003 | 0.0000 |
+| month | 0.0000 | 0.0000 |
+
+**Does it confirm agency as the top driver?** Not on its own: complaint_type is the most important single feature (AUC drop 0.2755) and agency ranks #2 (0.0671). That's mostly overlap, not disagreement: complaint type nearly determines the agency, so when agency alone is shuffled the model still gets that information from complaint type. Shuffled together, agency + complaint type drop AUC by 0.4597, more than any single feature, so *who handles the request and what it's about* is the main driver.
+
+**About month:** the model is trained on months 1-9 and tested on 10-12, so it never sees a test month during training. Month can only act as a trend that's extrapolated forward, and shuffling it within Oct-Dec (AUC drop 0.0000) measures little. A model trained on several years would be needed to learn real month effects.
+
 ## Figures
 
 - `results/figures/1a_km_top8_agencies.png`: Kaplan-Meier curves for the 8 largest agencies: the share of requests still open over time, labeled where each crosses 50% (its median).
@@ -203,3 +266,7 @@ Most intervals are very narrow because the groups are so large. The widest is DO
 - `results/figures/2a_effect_sizes.png`: Epsilon-squared effect sizes from the Kruskal-Wallis tests: how much of the variation in resolution time agency, borough and season each explain.
 - `results/figures/2b_bootstrap_median_agency.png`: Median resolution time per agency with 95% bootstrap confidence intervals, on a log scale.
 - `results/figures/2c_bootstrap_median_borough.png`: Median resolution time per borough with 95% bootstrap confidence intervals.
+- `results/figures/3a_roc_curves.png`: ROC curves for the baseline, logistic regression and gradient boosting on the Oct-Dec 2025 test set.
+- `results/figures/3b_confusion_matrices.png`: Confusion matrices for the three models: how many slow and fast requests each one got right and wrong.
+- `results/figures/3c_calibration.png`: Calibration of the best model: predicted probability of closing within 7 days vs the actual share, in 10 bins.
+- `results/figures/3d_permutation_importance.png`: Permutation feature importance for the best model, including agency and complaint type shuffled together.

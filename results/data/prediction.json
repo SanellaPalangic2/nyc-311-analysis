@@ -1,0 +1,165 @@
+{
+  "target_hours": 168,
+  "features": [
+    "agency",
+    "complaint_type",
+    "borough",
+    "channel",
+    "month",
+    "day_of_week",
+    "hour"
+  ],
+  "counts": {
+    "rows_in_clean_table": 3655042,
+    "outcome_unknown_excluded": 6940,
+    "train_rows": 2674661,
+    "test_rows": 973441,
+    "train_pct_within_7d": 82.66744832335762,
+    "test_pct_within_7d": 83.70800079306296,
+    "test_complaint_types_unseen_in_train": 3
+  },
+  "split": {
+    "train": "Jan-Sep 2025 (created)",
+    "test": "Oct-Dec 2025 (created)"
+  },
+  "threshold": 0.5,
+  "results": {
+    "Majority-class baseline": {
+      "roc_auc": 0.5,
+      "confusion": {
+        "tn": 0,
+        "fp": 158593,
+        "fn": 0,
+        "tp": 814848
+      },
+      "within_7d": {
+        "precision": 0.8370800079306296,
+        "recall": 1.0,
+        "f1": 0.9113157884435905
+      },
+      "slow": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    },
+    "Logistic regression": {
+      "roc_auc": 0.9543648030615871,
+      "confusion": {
+        "tn": 121796,
+        "fp": 36797,
+        "fn": 60828,
+        "tp": 754020
+      },
+      "within_7d": {
+        "precision": 0.9534696396258553,
+        "recall": 0.9253504948162111,
+        "f1": 0.9391996462524873
+      },
+      "slow": {
+        "precision": 0.6669222008060277,
+        "recall": 0.7679784101442056,
+        "f1": 0.7138917463080678
+      }
+    },
+    "Gradient boosting": {
+      "roc_auc": 0.9556114654016994,
+      "confusion": {
+        "tn": 101611,
+        "fp": 56982,
+        "fn": 42869,
+        "tp": 771979
+      },
+      "within_7d": {
+        "precision": 0.9312609398994645,
+        "recall": 0.9473901881087025,
+        "f1": 0.9392563247919923
+      },
+      "slow": {
+        "precision": 0.7032876522702104,
+        "recall": 0.6407029314030254,
+        "f1": 0.6705381211787259
+      }
+    }
+  },
+  "fit_seconds": {
+    "Majority-class baseline": 0.17727112770080566,
+    "Logistic regression": 30.931427478790283,
+    "Gradient boosting": 19.970162868499756
+  },
+  "best_model": "Gradient boosting",
+  "calibration": {
+    "brier": 0.06222573504523479,
+    "mean_predicted": [
+      0.23252912003263762,
+      0.5121838625689784,
+      0.772744399297587,
+      0.9631770010045868,
+      0.9898612566969284,
+      0.9966459755922837,
+      0.999870396664949,
+      0.9998763568069676,
+      0.9998847906251078,
+      0.9998965111367609
+    ],
+    "fraction_positive": [
+      0.24243729362784305,
+      0.4297444602374403,
+      0.7373508673986312,
+      0.9677567283881421,
+      0.9988589638157894,
+      0.9972608319332009,
+      1.0,
+      1.0,
+      0.9999897057915217,
+      1.0
+    ]
+  },
+  "permutation": {
+    "rows": 200000,
+    "repeats": 5,
+    "seed": 42,
+    "importance": [
+      {
+        "feature": "agency",
+        "auc_drop": 0.06708117027312302,
+        "std": 0.0003657958109339285
+      },
+      {
+        "feature": "complaint_type",
+        "auc_drop": 0.27553405362598526,
+        "std": 0.0010315322340889036
+      },
+      {
+        "feature": "borough",
+        "auc_drop": 0.004306111743389152,
+        "std": 9.999527538057684e-05
+      },
+      {
+        "feature": "channel",
+        "auc_drop": 0.00038903551453057795,
+        "std": 4.753429702197097e-05
+      },
+      {
+        "feature": "month",
+        "auc_drop": 0.0,
+        "std": 0.0
+      },
+      {
+        "feature": "day_of_week",
+        "auc_drop": 0.00027462878061050854,
+        "std": 1.129832489365444e-05
+      },
+      {
+        "feature": "hour",
+        "auc_drop": 0.0004194345766785013,
+        "std": 4.755640608613863e-05
+      },
+      {
+        "feature": "agency + complaint_type",
+        "auc_drop": 0.459701385360132,
+        "std": 0.000910128024318476
+      }
+    ]
+  }
+}
