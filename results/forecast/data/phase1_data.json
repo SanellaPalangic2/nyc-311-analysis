@@ -1,0 +1,829 @@
+{
+  "series": [
+    "Total",
+    "NYPD",
+    "HPD",
+    "DSNY",
+    "DOT",
+    "DEP"
+  ],
+  "calendar": {
+    "expected_days": 365,
+    "days_in_series": 365,
+    "days_missing_from_calendar": [],
+    "days_with_zero_requests": [],
+    "days_missing_clock_hours": {},
+    "dst_days": {
+      "2025-03-09": 23
+    },
+    "first_created": "2025-01-01T00:00:12",
+    "last_created": "2025-12-31T23:59:28"
+  },
+  "partial_weeks_excluded": [
+    "2024-12-30",
+    "2025-12-29"
+  ],
+  "complete_weeks": 51,
+  "weekly_total": {
+    "min": 57403,
+    "max": 94785,
+    "mean": 69909
+  },
+  "z_threshold": 3.5,
+  "outliers_total": [
+    {
+      "day": "2025-01-04",
+      "weekday": "Saturday",
+      "requests": 11459,
+      "baseline": 8620,
+      "pct_vs_baseline": 32.9,
+      "robust_z": 3.94,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": 2647,
+      "hotspot_requests": 2861
+    },
+    {
+      "day": "2025-01-05",
+      "weekday": "Sunday",
+      "requests": 13574,
+      "baseline": 7818,
+      "pct_vs_baseline": 73.6,
+      "robust_z": 7.59,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": 4898,
+      "hotspot_requests": 4978
+    },
+    {
+      "day": "2025-01-06",
+      "weekday": "Monday",
+      "requests": 14141,
+      "baseline": 9767,
+      "pct_vs_baseline": 44.8,
+      "robust_z": 5.11,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": 3568,
+      "hotspot_requests": 3841
+    },
+    {
+      "day": "2025-01-07",
+      "weekday": "Tuesday",
+      "requests": 15023,
+      "baseline": 10079,
+      "pct_vs_baseline": 49.1,
+      "robust_z": 5.51,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": 2705,
+      "hotspot_requests": 2770
+    },
+    {
+      "day": "2025-01-09",
+      "weekday": "Thursday",
+      "requests": 14906,
+      "baseline": 10846,
+      "pct_vs_baseline": 37.4,
+      "robust_z": 4.4,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": 2953,
+      "hotspot_requests": 2963
+    },
+    {
+      "day": "2025-01-10",
+      "weekday": "Friday",
+      "requests": 14220,
+      "baseline": 10579,
+      "pct_vs_baseline": 34.4,
+      "robust_z": 4.1,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": 2934,
+      "hotspot_requests": 4002
+    },
+    {
+      "day": "2025-01-11",
+      "weekday": "Saturday",
+      "requests": 11420,
+      "baseline": 8364,
+      "pct_vs_baseline": 36.5,
+      "robust_z": 4.31,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": 3404,
+      "hotspot_requests": 3562
+    },
+    {
+      "day": "2025-01-12",
+      "weekday": "Sunday",
+      "requests": 11756,
+      "baseline": 8037,
+      "pct_vs_baseline": 46.3,
+      "robust_z": 5.25,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": 3594,
+      "hotspot_requests": 3612
+    },
+    {
+      "day": "2025-01-13",
+      "weekday": "Monday",
+      "requests": 13049,
+      "baseline": 9540,
+      "pct_vs_baseline": 36.8,
+      "robust_z": 4.33,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": 2988,
+      "hotspot_requests": 3086
+    },
+    {
+      "day": "2025-01-21",
+      "weekday": "Tuesday",
+      "requests": 13688,
+      "baseline": 10079,
+      "pct_vs_baseline": 35.8,
+      "robust_z": 4.24,
+      "holiday": null,
+      "top_complaint_type": "HEAT/HOT WATER",
+      "top_type_excess": 3234,
+      "hotspot_requests": 0
+    },
+    {
+      "day": "2025-01-22",
+      "weekday": "Wednesday",
+      "requests": 13590,
+      "baseline": 9886,
+      "pct_vs_baseline": 37.5,
+      "robust_z": 4.4,
+      "holiday": null,
+      "top_complaint_type": "HEAT/HOT WATER",
+      "top_type_excess": 3298,
+      "hotspot_requests": 0
+    },
+    {
+      "day": "2025-01-24",
+      "weekday": "Friday",
+      "requests": 12247,
+      "baseline": 9238,
+      "pct_vs_baseline": 32.6,
+      "robust_z": 3.91,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": 2359,
+      "hotspot_requests": 2352
+    },
+    {
+      "day": "2025-06-24",
+      "weekday": "Tuesday",
+      "requests": 14079,
+      "baseline": 9854,
+      "pct_vs_baseline": 42.9,
+      "robust_z": 4.93,
+      "holiday": null,
+      "top_complaint_type": "Water System",
+      "top_type_excess": 3192,
+      "hotspot_requests": 0
+    },
+    {
+      "day": "2025-10-31",
+      "weekday": "Friday",
+      "requests": 13908,
+      "baseline": 10268,
+      "pct_vs_baseline": 35.5,
+      "robust_z": 4.2,
+      "holiday": null,
+      "top_complaint_type": "Construction Safety Enforcement",
+      "top_type_excess": 2110,
+      "hotspot_requests": 0
+    },
+    {
+      "day": "2025-11-12",
+      "weekday": "Wednesday",
+      "requests": 13453,
+      "baseline": 10242,
+      "pct_vs_baseline": 31.3,
+      "robust_z": 3.78,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": 2042,
+      "hotspot_requests": 2139
+    },
+    {
+      "day": "2025-11-25",
+      "weekday": "Tuesday",
+      "requests": 9361,
+      "baseline": 12199,
+      "pct_vs_baseline": -23.3,
+      "robust_z": -3.57,
+      "holiday": null,
+      "top_complaint_type": "HEAT/HOT WATER",
+      "top_type_excess": -1283,
+      "hotspot_requests": 0
+    },
+    {
+      "day": "2025-11-27",
+      "weekday": "Thursday",
+      "requests": 8147,
+      "baseline": 11114,
+      "pct_vs_baseline": -26.7,
+      "robust_z": -4.19,
+      "holiday": "Thanksgiving Day",
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": 1417,
+      "hotspot_requests": 1401
+    },
+    {
+      "day": "2025-12-04",
+      "weekday": "Thursday",
+      "requests": 13118,
+      "baseline": 10063,
+      "pct_vs_baseline": 30.4,
+      "robust_z": 3.68,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": 1396,
+      "hotspot_requests": 2106
+    },
+    {
+      "day": "2025-12-05",
+      "weekday": "Friday",
+      "requests": 13129,
+      "baseline": 10138,
+      "pct_vs_baseline": 29.5,
+      "robust_z": 3.59,
+      "holiday": null,
+      "top_complaint_type": "HEAT/HOT WATER",
+      "top_type_excess": 1752,
+      "hotspot_requests": 1618
+    },
+    {
+      "day": "2025-12-09",
+      "weekday": "Tuesday",
+      "requests": 14078,
+      "baseline": 10408,
+      "pct_vs_baseline": 35.3,
+      "robust_z": 4.18,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": 1814,
+      "hotspot_requests": 1963
+    },
+    {
+      "day": "2025-12-15",
+      "weekday": "Monday",
+      "requests": 16388,
+      "baseline": 10178,
+      "pct_vs_baseline": 61.0,
+      "robust_z": 6.56,
+      "holiday": null,
+      "top_complaint_type": "Snow or Ice",
+      "top_type_excess": 3296,
+      "hotspot_requests": 1666
+    },
+    {
+      "day": "2025-12-16",
+      "weekday": "Tuesday",
+      "requests": 13946,
+      "baseline": 10072,
+      "pct_vs_baseline": 38.5,
+      "robust_z": 4.5,
+      "holiday": null,
+      "top_complaint_type": "Snow or Ice",
+      "top_type_excess": 1828,
+      "hotspot_requests": 1099
+    },
+    {
+      "day": "2025-12-23",
+      "weekday": "Tuesday",
+      "requests": 8354,
+      "baseline": 13086,
+      "pct_vs_baseline": -36.2,
+      "robust_z": -6.08,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": -1611,
+      "hotspot_requests": 0
+    },
+    {
+      "day": "2025-12-24",
+      "weekday": "Wednesday",
+      "requests": 7780,
+      "baseline": 11340,
+      "pct_vs_baseline": -31.4,
+      "robust_z": -5.1,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": -912,
+      "hotspot_requests": 0
+    },
+    {
+      "day": "2025-12-25",
+      "weekday": "Thursday",
+      "requests": 6216,
+      "baseline": 11675,
+      "pct_vs_baseline": -46.8,
+      "robust_z": -8.56,
+      "holiday": "Christmas Day",
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": -1140,
+      "hotspot_requests": 0
+    },
+    {
+      "day": "2025-12-26",
+      "weekday": "Friday",
+      "requests": 8510,
+      "baseline": 12035,
+      "pct_vs_baseline": -29.3,
+      "robust_z": -4.68,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": -1535,
+      "hotspot_requests": 0
+    },
+    {
+      "day": "2025-12-27",
+      "weekday": "Saturday",
+      "requests": 7838,
+      "baseline": 10474,
+      "pct_vs_baseline": -25.2,
+      "robust_z": -3.91,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": -2223,
+      "hotspot_requests": 0
+    },
+    {
+      "day": "2025-12-29",
+      "weekday": "Monday",
+      "requests": 9452,
+      "baseline": 12547,
+      "pct_vs_baseline": -24.7,
+      "robust_z": -3.82,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": -1426,
+      "hotspot_requests": 0
+    },
+    {
+      "day": "2025-12-30",
+      "weekday": "Tuesday",
+      "requests": 10072,
+      "baseline": 13946,
+      "pct_vs_baseline": -27.8,
+      "robust_z": -4.39,
+      "holiday": null,
+      "top_complaint_type": "Noise - Residential",
+      "top_type_excess": -1156,
+      "hotspot_requests": 0
+    }
+  ],
+  "outlier_episodes_total": [
+    {
+      "start": "2025-01-04",
+      "end": "2025-01-13",
+      "n_outlier_days": 9,
+      "direction": "high",
+      "peak_day": "2025-01-05",
+      "peak_pct_vs_baseline": 73.6,
+      "peak_robust_z": 7.59,
+      "main_driver": "Noise - Residential",
+      "excess_requests": 35898,
+      "hotspot_requests": 31675,
+      "hotspot_share_of_excess_pct": 88.2,
+      "holidays": []
+    },
+    {
+      "start": "2025-01-21",
+      "end": "2025-01-24",
+      "n_outlier_days": 3,
+      "direction": "high",
+      "peak_day": "2025-01-22",
+      "peak_pct_vs_baseline": 37.5,
+      "peak_robust_z": 4.4,
+      "main_driver": "HEAT/HOT WATER",
+      "excess_requests": 10322,
+      "hotspot_requests": 2352,
+      "hotspot_share_of_excess_pct": 22.8,
+      "holidays": []
+    },
+    {
+      "start": "2025-06-24",
+      "end": "2025-06-24",
+      "n_outlier_days": 1,
+      "direction": "high",
+      "peak_day": "2025-06-24",
+      "peak_pct_vs_baseline": 42.9,
+      "peak_robust_z": 4.93,
+      "main_driver": "Water System",
+      "excess_requests": 4225,
+      "hotspot_requests": 0,
+      "hotspot_share_of_excess_pct": 0.0,
+      "holidays": []
+    },
+    {
+      "start": "2025-10-31",
+      "end": "2025-10-31",
+      "n_outlier_days": 1,
+      "direction": "high",
+      "peak_day": "2025-10-31",
+      "peak_pct_vs_baseline": 35.5,
+      "peak_robust_z": 4.2,
+      "main_driver": "Construction Safety Enforcement",
+      "excess_requests": 3640,
+      "hotspot_requests": 0,
+      "hotspot_share_of_excess_pct": 0.0,
+      "holidays": []
+    },
+    {
+      "start": "2025-11-12",
+      "end": "2025-11-12",
+      "n_outlier_days": 1,
+      "direction": "high",
+      "peak_day": "2025-11-12",
+      "peak_pct_vs_baseline": 31.3,
+      "peak_robust_z": 3.78,
+      "main_driver": "Noise - Residential",
+      "excess_requests": 3211,
+      "hotspot_requests": 2139,
+      "hotspot_share_of_excess_pct": 66.6,
+      "holidays": []
+    },
+    {
+      "start": "2025-11-25",
+      "end": "2025-11-27",
+      "n_outlier_days": 2,
+      "direction": "low",
+      "peak_day": "2025-11-27",
+      "peak_pct_vs_baseline": -26.7,
+      "peak_robust_z": -4.19,
+      "main_driver": "Thanksgiving Day",
+      "excess_requests": -5805,
+      "hotspot_requests": 1401,
+      "hotspot_share_of_excess_pct": null,
+      "holidays": [
+        "Thanksgiving Day"
+      ]
+    },
+    {
+      "start": "2025-12-04",
+      "end": "2025-12-05",
+      "n_outlier_days": 2,
+      "direction": "high",
+      "peak_day": "2025-12-04",
+      "peak_pct_vs_baseline": 30.4,
+      "peak_robust_z": 3.68,
+      "main_driver": "HEAT/HOT WATER",
+      "excess_requests": 6046,
+      "hotspot_requests": 3724,
+      "hotspot_share_of_excess_pct": 61.6,
+      "holidays": []
+    },
+    {
+      "start": "2025-12-09",
+      "end": "2025-12-09",
+      "n_outlier_days": 1,
+      "direction": "high",
+      "peak_day": "2025-12-09",
+      "peak_pct_vs_baseline": 35.3,
+      "peak_robust_z": 4.18,
+      "main_driver": "Noise - Residential",
+      "excess_requests": 3670,
+      "hotspot_requests": 1963,
+      "hotspot_share_of_excess_pct": 53.5,
+      "holidays": []
+    },
+    {
+      "start": "2025-12-15",
+      "end": "2025-12-16",
+      "n_outlier_days": 2,
+      "direction": "high",
+      "peak_day": "2025-12-15",
+      "peak_pct_vs_baseline": 61.0,
+      "peak_robust_z": 6.56,
+      "main_driver": "Snow or Ice",
+      "excess_requests": 10084,
+      "hotspot_requests": 2765,
+      "hotspot_share_of_excess_pct": 27.4,
+      "holidays": []
+    },
+    {
+      "start": "2025-12-23",
+      "end": "2025-12-30",
+      "n_outlier_days": 7,
+      "direction": "low",
+      "peak_day": "2025-12-25",
+      "peak_pct_vs_baseline": -46.8,
+      "peak_robust_z": -8.56,
+      "main_driver": "Christmas Day",
+      "excess_requests": -26881,
+      "hotspot_requests": 0,
+      "hotspot_share_of_excess_pct": null,
+      "holidays": [
+        "Christmas Day"
+      ]
+    }
+  ],
+  "hotspot_profile": {
+    "complaint_type": "Noise - Residential",
+    "zip": "10466",
+    "location_requests_year": 115363.0,
+    "location_median_per_day": 0.0,
+    "location_max_per_day": 4978.0,
+    "location_hotspot_days": 84.0,
+    "hotspot_pct_mobile": 100.0,
+    "other_pct_mobile": 21.0,
+    "hotspot_median_hours_to_close": 2.06,
+    "other_median_hours_to_close": 1.06
+  },
+  "outlier_days_total_excl_hotspots": [
+    "2025-01-01",
+    "2025-01-21",
+    "2025-01-22",
+    "2025-06-24",
+    "2025-10-31",
+    "2025-11-27",
+    "2025-12-15",
+    "2025-12-16",
+    "2025-12-23",
+    "2025-12-24",
+    "2025-12-25"
+  ],
+  "holidays_pct_vs_baseline": {
+    "2025-01-01": {
+      "name": "New Year's Day",
+      "pct_vs_baseline": -18.4,
+      "robust_z": -2.72
+    },
+    "2025-01-20": {
+      "name": "Martin Luther King Jr. Day",
+      "pct_vs_baseline": -7.2,
+      "robust_z": -0.97
+    },
+    "2025-02-17": {
+      "name": "Washington's Birthday",
+      "pct_vs_baseline": -5.8,
+      "robust_z": -0.76
+    },
+    "2025-05-26": {
+      "name": "Memorial Day",
+      "pct_vs_baseline": -7.0,
+      "robust_z": -0.94
+    },
+    "2025-06-19": {
+      "name": "Juneteenth National Independence Day",
+      "pct_vs_baseline": -7.9,
+      "robust_z": -1.08
+    },
+    "2025-07-04": {
+      "name": "Independence Day",
+      "pct_vs_baseline": 10.6,
+      "robust_z": 1.43
+    },
+    "2025-09-01": {
+      "name": "Labor Day",
+      "pct_vs_baseline": -9.3,
+      "robust_z": -1.28
+    },
+    "2025-10-13": {
+      "name": "Columbus Day",
+      "pct_vs_baseline": 1.1,
+      "robust_z": 0.2
+    },
+    "2025-11-11": {
+      "name": "Veterans Day",
+      "pct_vs_baseline": 9.4,
+      "robust_z": 1.28
+    },
+    "2025-11-27": {
+      "name": "Thanksgiving Day",
+      "pct_vs_baseline": -26.7,
+      "robust_z": -4.19
+    },
+    "2025-12-25": {
+      "name": "Christmas Day",
+      "pct_vs_baseline": -46.8,
+      "robust_z": -8.56
+    }
+  },
+  "series_summary": {
+    "Total": {
+      "mean_per_day": 10013.8,
+      "min": 6216,
+      "max": 16388,
+      "days_with_zero": 0,
+      "noise_pct": 7.3,
+      "n_outlier_days": 29,
+      "hotspot_requests": 124099,
+      "hotspot_pct": 3.4,
+      "hotspot_days": 92,
+      "noise_pct_excl_hotspots": 6.9,
+      "n_outlier_days_excl_hotspots": 11,
+      "weekday_profile_pct": {
+        "Mon": 4.8,
+        "Tue": 3.8,
+        "Wed": 1.2,
+        "Thu": 0.8,
+        "Fri": 1.9,
+        "Sat": -7.1,
+        "Sun": -7.1
+      },
+      "monthly_index_pct": {
+        "1": 12.2,
+        "2": -8.9,
+        "3": -9.4,
+        "4": -9.3,
+        "5": -5.0,
+        "6": 2.0,
+        "7": 1.8,
+        "8": -2.1,
+        "9": 0.8,
+        "10": 8.4,
+        "11": 1.5,
+        "12": 7.0
+      }
+    },
+    "NYPD": {
+      "mean_per_day": 4705.7,
+      "min": 2739,
+      "max": 8711,
+      "days_with_zero": 0,
+      "noise_pct": 11.3,
+      "n_outlier_days": 19,
+      "hotspot_requests": 123879,
+      "hotspot_pct": 7.21,
+      "hotspot_days": 92,
+      "noise_pct_excl_hotspots": 8.9,
+      "n_outlier_days_excl_hotspots": 7,
+      "weekday_profile_pct": {
+        "Mon": -8.8,
+        "Tue": -9.7,
+        "Wed": -12.7,
+        "Thu": -11.5,
+        "Fri": 0.3,
+        "Sat": 14.1,
+        "Sun": 19.4
+      },
+      "monthly_index_pct": {
+        "1": 5.0,
+        "2": -20.9,
+        "3": -10.8,
+        "4": -9.5,
+        "5": 3.9,
+        "6": 5.0,
+        "7": 2.7,
+        "8": 5.7,
+        "9": 11.3,
+        "10": 8.9,
+        "11": -1.0,
+        "12": -2.2
+      }
+    },
+    "HPD": {
+      "mean_per_day": 2122.0,
+      "min": 473,
+      "max": 7127,
+      "days_with_zero": 0,
+      "noise_pct": 16.3,
+      "n_outlier_days": 11,
+      "hotspot_requests": 220,
+      "hotspot_pct": 0.03,
+      "hotspot_days": 2,
+      "noise_pct_excl_hotspots": 16.3,
+      "n_outlier_days_excl_hotspots": 11,
+      "weekday_profile_pct": {
+        "Mon": 25.3,
+        "Tue": 17.1,
+        "Wed": 17.3,
+        "Thu": 13.1,
+        "Fri": 0.0,
+        "Sat": -40.2,
+        "Sun": -39.2
+      },
+      "monthly_index_pct": {
+        "1": 68.2,
+        "2": 25.5,
+        "3": -5.8,
+        "4": -19.7,
+        "5": -36.2,
+        "6": -35.7,
+        "7": -33.1,
+        "8": -39.1,
+        "9": -33.0,
+        "10": 13.4,
+        "11": 35.5,
+        "12": 60.9
+      }
+    },
+    "DSNY": {
+      "mean_per_day": 895.3,
+      "min": 276,
+      "max": 3720,
+      "days_with_zero": 0,
+      "noise_pct": 14.2,
+      "n_outlier_days": 20,
+      "hotspot_requests": 0,
+      "hotspot_pct": 0.0,
+      "hotspot_days": 0,
+      "noise_pct_excl_hotspots": 14.2,
+      "n_outlier_days_excl_hotspots": 20,
+      "weekday_profile_pct": {
+        "Mon": 7.2,
+        "Tue": 14.1,
+        "Wed": 9.7,
+        "Thu": 9.0,
+        "Fri": 6.9,
+        "Sat": -23.0,
+        "Sun": -25.3
+      },
+      "monthly_index_pct": {
+        "1": -5.0,
+        "2": -13.5,
+        "3": -8.8,
+        "4": 9.8,
+        "5": 3.6,
+        "6": 10.4,
+        "7": 16.9,
+        "8": 9.3,
+        "9": 9.1,
+        "10": -7.8,
+        "11": -24.2,
+        "12": -1.0
+      }
+    },
+    "DOT": {
+      "mean_per_day": 581.1,
+      "min": 151,
+      "max": 1098,
+      "days_with_zero": 0,
+      "noise_pct": 12.4,
+      "n_outlier_days": 11,
+      "hotspot_requests": 0,
+      "hotspot_pct": 0.0,
+      "hotspot_days": 0,
+      "noise_pct_excl_hotspots": 12.4,
+      "n_outlier_days_excl_hotspots": 11,
+      "weekday_profile_pct": {
+        "Mon": 16.9,
+        "Tue": 23.2,
+        "Wed": 21.5,
+        "Thu": 18.7,
+        "Fri": 3.3,
+        "Sat": -40.2,
+        "Sun": -42.1
+      },
+      "monthly_index_pct": {
+        "1": -7.9,
+        "2": 9.6,
+        "3": 6.2,
+        "4": 4.2,
+        "5": 6.5,
+        "6": 13.1,
+        "7": 2.4,
+        "8": -3.8,
+        "9": -0.4,
+        "10": -3.2,
+        "11": -16.7,
+        "12": -8.9
+      }
+    },
+    "DEP": {
+      "mean_per_day": 540.1,
+      "min": 185,
+      "max": 3721,
+      "days_with_zero": 0,
+      "noise_pct": 14.9,
+      "n_outlier_days": 16,
+      "hotspot_requests": 0,
+      "hotspot_pct": 0.0,
+      "hotspot_days": 0,
+      "noise_pct_excl_hotspots": 14.9,
+      "n_outlier_days_excl_hotspots": 16,
+      "weekday_profile_pct": {
+        "Mon": 10.3,
+        "Tue": 15.1,
+        "Wed": 10.6,
+        "Thu": 9.6,
+        "Fri": -0.4,
+        "Sat": -20.1,
+        "Sun": -31.3
+      },
+      "monthly_index_pct": {
+        "1": -8.3,
+        "2": -13.6,
+        "3": -18.5,
+        "4": -21.4,
+        "5": -17.3,
+        "6": 50.7,
+        "7": 50.2,
+        "8": 15.1,
+        "9": -4.5,
+        "10": 6.6,
+        "11": -15.2,
+        "12": -24.7
+      }
+    }
+  }
+}

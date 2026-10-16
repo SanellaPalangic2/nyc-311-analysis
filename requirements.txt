@@ -19,3 +19,7 @@ pytest==9.1.1
 lifelines==0.30.3
 # Prediction model (analysis/prediction.py)
 scikit-learn==1.9.1
+# US federal holidays for the demand forecast (forecast/)
+holidays==0.106
+# Holt-Winters exponential smoothing (forecast/models.py)
+statsmodels==0.15.0
