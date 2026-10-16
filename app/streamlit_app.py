@@ -294,8 +294,166 @@ def page_model():
                f"{model['permutation']['repeats']} shuffles each.")
 
 
+@st.cache_data
+def load_forecast():
+    fsum = json.loads((DATA / "forecast_summary.json").read_text(encoding="utf-8"))
+    return (pd.read_parquet(DATA / "forecast_daily.parquet"), pd.read_parquet(DATA / "forecast_backtest.parquet"),
+            fsum)
+
+
+SHORT = {"naive": "Naive", "seasonal_naive": "Seasonal naive", "weekday_avg_4wk": "4-week same-weekday avg",
+         "holt_winters": "Holt-Winters", "gradient_boosting": "Gradient boosting"}
+
+
+def page_forecast():
+    fdaily, fbt, fs = load_forecast()
+    best = fs["best_model"]
+    m = {(r["variant"], r["split"], r["model"]): r for r in fs["total_metrics"]}
+    b_test, b_val = m[("as_recorded", "test", best)], m[("as_recorded", "validation", best)]
+    test_best = min((r for r in fs["total_metrics"] if r["variant"] == "as_recorded" and r["split"] == "test"),
+                    key=lambda r: r["mae"])
+    cov = fs["total_coverage"]["as_recorded/test"]
+
+    st.title("Demand forecast: daily requests, 14 days ahead")
+    st.caption(f"Rolling-origin backtest: at each weekly cutoff a model sees only the days up to the cutoff and "
+               f"forecasts the next {fs['horizon']}. Models were chosen on {len(fs['validation_cutoffs'])} validation "
+               f"cutoffs ({fs['validation_cutoffs'][0]} to {fs['validation_cutoffs'][-1]}) and are scored here on "
+               f"{len(fs['test_cutoffs'])} test cutoffs ({fs['test_cutoffs'][0]} to {fs['test_cutoffs'][-1]}), "
+               f"which cover the last 10 weeks of 2025.")
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Model chosen on validation", SHORT[best],
+              help=f"Lowest validation MAE for the citywide total ({b_val['mae']:,.0f} requests/day).")
+    c2.metric("Its test MAE", f"{b_test['mae']:,.0f} / day", f"{b_test['mae_improvement_pct']:+.1f}% vs seasonal naive",
+              help="Average miss per day over all test forecasts. Positive % = lower error than "
+                   "'same weekday last week'.")
+    c3.metric("Best test MAE", f"{test_best['mae']:,.0f} / day", SHORT[test_best["model"]], delta_color="off",
+              help="Reported for honesty only: choosing a model on test results would leak the test set.")
+    c4.metric("80% interval coverage (test)", f"{cov['coverage_pct']:.1f}%",
+              help="Share of actual days inside the 80% interval. Target 80%; the intervals were "
+                   "calibrated on calmer months.")
+
+    # --- Actual vs forecast chart ---
+    series_options = ["Total"] + fs["agency_order"]
+    f1, f2, f3 = st.columns([1, 1.2, 1])
+    series = f1.selectbox("Series", series_options, key="fc_series",
+                          format_func=lambda s: "All agencies (Total)" if s == "Total" else s)
+    horizon = f2.radio("Forecast made", ["1-7 days ahead", "8-14 days ahead"], horizontal=True, key="fc_horizon")
+    show_band = f3.checkbox("Show 80% interval", value=True, key="fc_band")
+    lo_h, hi_h = (1, 7) if horizon.startswith("1-") else (8, 14)
+
+    rows = fbt[(fbt.series == series) & fbt.horizon.between(lo_h, hi_h)].sort_values("day")
+    model_name = SHORT[rows.model.iloc[0]]
+    first_day = rows.day.min()
+    context = fdaily[(fdaily.series == series) & (fdaily.day >= first_day - pd.Timedelta(weeks=4))]
+    wide = context[["day", "actual"]].merge(rows[["day", "forecast", "lo", "hi", "cutoff"]], on="day", how="left")
+    long = wide.melt(id_vars="day", value_vars=["actual", "forecast"], var_name="line", value_name="requests")
+    long["line"] = long.line.map({"actual": "Actual", "forecast": f"Forecast ({model_name})"})
+    domain = ["Actual", f"Forecast ({model_name})"]
+
+    base = alt.Chart(wide).encode(x=alt.X("day:T", title=None))
+    layers = []
+    if show_band:
+        layers.append(base.mark_area(opacity=0.18, color=BLUE).encode(
+            y=alt.Y("lo:Q", title="Requests per day"), y2="hi:Q"))
+    layers.append(alt.Chart(long).mark_line(strokeWidth=2).encode(
+        x="day:T", y=alt.Y("requests:Q", title="Requests per day"),
+        color=alt.Color("line:N", scale=alt.Scale(domain=domain, range=[INK, BLUE]),
+                        legend=alt.Legend(orient="bottom", title=None))))
+    nearest = alt.selection_point(nearest=True, on="pointerover", fields=["day"], empty=False)
+    layers.append(base.mark_rule(color=GRAY).encode(
+        opacity=alt.condition(nearest, alt.value(0.8), alt.value(0)),
+        tooltip=[alt.Tooltip("day:T", title="Day", format="%a %b %d"),
+                 alt.Tooltip("actual:Q", title="Actual", format=",.0f"),
+                 alt.Tooltip("forecast:Q", title="Forecast", format=",.0f"),
+                 alt.Tooltip("lo:Q", title="80% low", format=",.0f"),
+                 alt.Tooltip("hi:Q", title="80% high", format=",.0f"),
+                 alt.Tooltip("cutoff:T", title="Made on cutoff", format="%b %d")]).add_params(nearest))
+    st.altair_chart(alt.layer(*layers).properties(height=380), width="stretch")
+    inside = ((rows.actual >= rows.lo) & (rows.actual <= rows.hi)).mean() * 100
+    mape = ((rows.actual - rows.forecast).abs() / rows.actual).mean() * 100
+    st.caption(f"{model_name} (chosen for this series on validation), forecasts made {horizon}. Each 7-day stretch "
+               f"comes from a different weekly cutoff; the 4 weeks before the test period are shown as context. "
+               f"In this view: MAPE {mape:.1f}%, {inside:.0f}% of actual days inside the 80% interval.")
+
+    # --- Model comparison ---
+    st.subheader("Model comparison: citywide total, same backtest for every model")
+    variant = st.radio("Data", ["As recorded", "Excluding single-location bursts"], horizontal=True, key="fc_variant",
+                       help=f"One Bronx location filed bursts of noise complaints ({fs['hotspot_pct_total']:.1f}% of "
+                            f"2025 requests). Excluding them shows how much error they cause.")
+    v = "as_recorded" if variant == "As recorded" else "excl_hotspots"
+    comp = pd.DataFrame([{
+        "Model": fs["labels"][k] + (" (chosen)" if k == best else ""),
+        "Validation MAE": m[(v, "validation", k)]["mae"], "Test MAE": m[(v, "test", k)]["mae"],
+        "Test RMSE": m[(v, "test", k)]["rmse"], "Test MAPE %": m[(v, "test", k)]["mape"],
+        "Test MAE vs seasonal naive %": m[(v, "test", k)]["mae_improvement_pct"]} for k in fs["order"]])
+    st.dataframe(comp, hide_index=True, width="stretch", column_config={
+        c: st.column_config.NumberColumn(format="%.0f") for c in ["Validation MAE", "Test MAE", "Test RMSE"]} | {
+        "Test MAPE %": st.column_config.NumberColumn(format="%.1f"),
+        "Test MAE vs seasonal naive %": st.column_config.NumberColumn(format="%+.1f")})
+    best_v = min(fs["order"], key=lambda k: m[(v, "test", k)]["mae"])
+    st.caption(f"The model was chosen on validation (mid-Aug to mid-Oct, a calm period). On the volatile test weeks "
+               f"(bursts, Thanksgiving, the December snow, Christmas) the lowest test MAE here is "
+               f"{SHORT[best_v]}; nothing was re-tuned after seeing the test results.")
+
+    # --- Per agency ---
+    st.subheader("Per-agency forecasts, easiest to hardest")
+    am = {(r["variant"], r["split"], r["series"], r["model"]): r for r in fs["agency_metrics"]}
+    fx = {f["series"]: f for f in fs["agency_forecastability"]}
+    agency_rows = []
+    for a in fs["agency_order"]:
+        k = fs["agency_chosen"][f"as_recorded/{a}"]
+        t = am[("as_recorded", "test", a, k)]
+        p = fs["agency_per"][f"as_recorded/{a}"]
+        agency_rows.append({
+            "Agency": a, "Chosen on validation": SHORT[k], "Test MAPE %": t["mape"], "Test MAE": t["mae"],
+            "MAE vs seasonal naive %": t["mae_improvement_pct"],
+            "80% interval coverage %": p["coverage"]["test"]["coverage_pct"],
+            "Outlier days in test period": fx[a]["outlier_days_in_test_period"],
+            "Error on event days %": p["error_sources_chosen"]["event day"]["share_of_error_pct"],
+            "Level change Oct-Dec (pts)": fx[a]["oct_to_dec_level_change_pct"]})
+    pct_cols = ["Test MAPE %", "80% interval coverage %", "Error on event days %"]
+    st.dataframe(pd.DataFrame(agency_rows), hide_index=True, width="stretch", column_config={
+        c: st.column_config.NumberColumn(format="%.1f") for c in pct_cols} | {
+        "Test MAE": st.column_config.NumberColumn(format="%.0f"),
+        "MAE vs seasonal naive %": st.column_config.NumberColumn(format="%+.1f"),
+        "Level change Oct-Dec (pts)": st.column_config.NumberColumn(format="%+.0f")})
+    st.caption("DOT follows the working week and is easiest. DSNY is hardest: the December snow (Snow or Ice "
+               "requests) caused most of its error. HPD's heating season lifts its level through the test period, and "
+               "NYPD's error is mostly the single-location noise bursts.")
+
+    # --- Staffing ---
+    st.subheader("Staffing: roster to the forecast, or to the top of the 80% interval (P90)?")
+    staff = []
+    for a in fs["agency_order"]:
+        s = fs["agency_per"][f"as_recorded/{a}"]["staffing"]
+        staff.append({"Agency": a, "P90 buffer above forecast %": s["buffer_pct"],
+                      "Short days, forecast plan %": s["forecast"]["short_days_pct"],
+                      "Short days, P90 plan %": s["p90"]["short_days_pct"],
+                      "Avg spare capacity, P90 plan (requests/day)": s["p90"]["avg_unused"]})
+    staff = pd.DataFrame(staff)
+    chart_df = staff.melt(id_vars="Agency", value_vars=["Short days, forecast plan %", "Short days, P90 plan %"],
+                          var_name="Plan", value_name="pct")
+    plans = ["Short days, forecast plan %", "Short days, P90 plan %"]
+    bars = alt.Chart(chart_df).mark_bar(cornerRadiusEnd=4).encode(
+        x=alt.X("pct:Q", title="% of test days on which demand exceeded the plan"),
+        y=alt.Y("Agency:N", sort=fs["agency_order"], title=None),
+        yOffset=alt.YOffset("Plan:N", sort=plans, scale=alt.Scale(paddingInner=0.12)),
+        color=alt.Color("Plan:N", scale=alt.Scale(domain=plans, range=[ORANGE, BLUE]),
+                        legend=alt.Legend(orient="bottom", title=None)),
+        tooltip=["Agency:N", "Plan:N", alt.Tooltip("pct:Q", title="% of days short", format=".1f")])
+    target = alt.Chart(pd.DataFrame({"x": [10]})).mark_rule(color=INK, strokeDash=[4, 3]).encode(x="x:Q")
+    st.altair_chart((bars + target).properties(height=300), width="stretch")
+    st.dataframe(staff, hide_index=True, width="stretch", column_config={
+        c: st.column_config.NumberColumn(format="%.1f") for c in staff.columns if c != "Agency"} | {
+        "Avg spare capacity, P90 plan (requests/day)": st.column_config.NumberColumn(format="%.0f")})
+    st.caption("Rostering to P90 is the staffing version of safety stock: it should leave a shift short on about 10% "
+               "of days (dashed line). It cut short days sharply but stayed above 10%, because its buffer was sized "
+               "on calm months. Requests, not staff: converting needs each agency's requests handled per shift.")
+
+
 PAGES = {"Overview": page_overview, "Resolution time explorer": page_explorer,
-         "Survival curves": page_survival, "Prediction model": page_model}
+         "Survival curves": page_survival, "Prediction model": page_model, "Forecast": page_forecast}
 choice = st.sidebar.radio("Page", list(PAGES), key="page")
 st.sidebar.caption("Built from pre-aggregated files: no database, no raw rows. "
                    "Code and full analysis: see the project README.")

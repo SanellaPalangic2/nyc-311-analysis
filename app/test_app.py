@@ -11,7 +11,7 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 APP = str(Path(__file__).parent / "streamlit_app.py")
-PAGES = ["Overview", "Resolution time explorer", "Survival curves", "Prediction model"]
+PAGES = ["Overview", "Resolution time explorer", "Survival curves", "Prediction model", "Forecast"]
 # The explorer's measure picker shows these labels.
 MEASURE_LABELS = {"median_hours": "Median hours to close", "p90_hours": "90th percentile hours",
                   "pct_closed_within_30d": "% closed within 30 days",
@@ -93,3 +93,36 @@ def test_model_page_confusion_matrix_switches_model():
     at.run()
     assert not at.exception, at.exception
     assert at.selectbox(key="cm_model").value == "Logistic regression"
+
+
+def test_forecast_metrics_come_from_the_data_files():
+    at = open_page("Forecast")
+    values = {m.label: m.value for m in at.metric}
+    assert values["Model chosen on validation"] == "Gradient boosting"
+    assert values["Its test MAE"] == "1,765 / day"
+    assert values["Best test MAE"] == "1,533 / day"
+    assert values["80% interval coverage (test)"] == "40.5%"
+
+
+@pytest.mark.parametrize("series", ["Total", "DOT", "NYPD", "DEP", "HPD", "DSNY"])
+@pytest.mark.parametrize("horizon", ["1-7 days ahead", "8-14 days ahead"])
+def test_forecast_every_series_and_horizon(series, horizon):
+    at = open_page("Forecast")
+    at.selectbox(key="fc_series").set_value(series)
+    at.radio(key="fc_horizon").set_value(horizon)
+    at.run()
+    assert not at.exception, at.exception
+    assert at.selectbox(key="fc_series").value == series
+    assert "MAPE" in at.caption[1].value  # the chart caption reports this view's accuracy
+
+
+def test_forecast_tables_and_controls():
+    at = open_page("Forecast")
+    at.checkbox(key="fc_band").uncheck()
+    at.radio(key="fc_variant").set_value("Excluding single-location bursts")
+    at.run()
+    assert not at.exception, at.exception
+    comparison, agencies, staffing = (df.value for df in at.dataframe)
+    assert len(comparison) == 5 and comparison["Model"].str.contains("(chosen)", regex=False).sum() == 1
+    assert agencies["Agency"].tolist() == ["DOT", "NYPD", "DEP", "HPD", "DSNY"]  # easiest first
+    assert len(staffing) == 5
